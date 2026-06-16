@@ -33,7 +33,7 @@
       --text:    #f5f2ed;
       --muted:   #666;
       --muted2:  #888;
-      --accent:  #c8a96e;   /* Musette gold/sand */
+      --accent:  #E9BD4A;   /* Musette gold/sand */
       --white:   #ffffff;
       --green:   #4a7c59;
       --red:     #8b2e2e;
@@ -69,14 +69,10 @@
       margin-bottom: 40px;
     }
 
-    .musette-wordmark {
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 400;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--muted2);
-      margin-bottom: 20px;
+    .musette-wordmark img{
+      width: 100px;
+      height: auto;
+      margin-bottom: 40px;
     }
 
     .event-title {
@@ -92,13 +88,12 @@ font-style: normal;
     }
 
     .event-title em {
-      font-style: italic;
-      color: var(--accent);
+      color: var(--white);
     }
 
     .event-year {
       font-family: var(--font-display);
-      font-size: clamp(24px, 8vw, 44px);
+      font-size: 2em;
       font-weight: 300;
       letter-spacing: 0.06em;
       color: var(--muted);
@@ -121,8 +116,8 @@ font-style: normal;
 
     /* Divider */
     .divider {
-      width: 40px;
-      height: 1px;
+      width: 20px;
+      height: 0px;
       background: var(--border2);
       margin: 28px auto;
     }
@@ -159,6 +154,7 @@ font-style: normal;
       outline: none;
       transition: border-color 0.2s;
       border-radius: 0;
+      appearance: none;
       -webkit-appearance: none;
     }
     .field input[type="text"]::placeholder { color: var(--muted); }
@@ -283,7 +279,7 @@ font-style: normal;
     }
     .my-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-    .bar-info {}
+    
     .bar-name {
       font-family: var(--font-display);
       font-size: 15px;
@@ -524,9 +520,8 @@ font-style: normal;
 <!-- ═══ REGISTRATION ═══ -->
 <div id="reg-screen">
   <div class="brand-header">
-    <div class="musette-wordmark"><img src="icons/musette_mlogo-black.svg"></div>
-    <div class="event-title"><em>Skåne Grus</em></div>
-    <div class="event-year">2026</div>
+    <div class="musette-wordmark"><img src="icons/musette_mlogo-white.svg"></div>
+    <div class="event-title">Skåne Grus</div>
     <div class="event-meta">
       <span>27 Juni</span>
       <span class="dot">·</span>
