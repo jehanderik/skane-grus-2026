@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Skåne Grus">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <title>Skåne Grus 2026 – Live Tracker</title>
+
+  <!-- Musette fonts: Degular via Adobe Fonts -->
+  <link rel="stylesheet" href="https://use.typekit.net/jcw2zfd.css">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <!-- Route data -->
+  <script src="/route-data.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0a0a0a;
+      --dark:    #111111;
+      --mid:     #1a1a1a;
+      --border:  #252525;
+      --border2: #333;
+      --text:    #f5f2ed;
+      --muted:   #666;
+      --muted2:  #888;
+      --accent:  #c8a96e;   /* Musette gold/sand */
+      --white:   #ffffff;
+      --green:   #4a7c59;
+      --red:     #8b2e2e;
+      --font-display: 'degular-display', 'degular', Georgia, serif;
+      --font-body:    'degular', -apple-system, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--font-body);
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════════════════════════
+       REGISTRATION SCREEN
+    ═══════════════════════════════ */
+    #reg-screen {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px 40px;
+      background: var(--black);
+    }
+
+    /* Header */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .musette-wordmark {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-bottom: 20px;
+    }
+
+    .event-title {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 12vw, 64px);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 0.92;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .event-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .event-year {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 12vw, 64px);
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      line-height: 0.92;
+    }
+
+    .event-meta {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      font-weight: 500;
+    }
+    .event-meta .dot { color: var(--accent); }
+
+    /* Divider */
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--border2);
+      margin: 28px auto;
+    }
+
+    /* Form card */
+    .reg-card {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-bottom: 9px;
+    }
+
+    .field input[type="text"] {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border2);
+      padding: 10px 0 12px;
+      font-size: 18px;
+      font-family: var(--font-display);
+      font-weight: 400;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      border-radius: 0;
+      -webkit-appearance: none;
+    }
+    .field input[type="text"]::placeholder { color: var(--muted); }
+    .field input[type="text"]:focus { border-bottom-color: var(--accent); }
+
+    /* Photo upload */
+    .photo-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .photo-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 1px solid var(--border2);
+      background: var(--mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .photo-circle:active { border-color: var(--accent); }
+    .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+    .photo-text {
+      flex: 1;
+    }
+    .photo-text p {
+      font-size: 13px;
+      color: var(--muted2);
+      line-height: 1.5;
+    }
+    .photo-text button {
+      margin-top: 8px;
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 12px;
+      font-family: var(--font-body);
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    #photo-input { display: none; }
+
+    /* CTA button */
+    .btn-start {
+      width: 100%;
+      background: var(--white);
+      color: var(--black);
+      border: none;
+      border-radius: 0;
+      padding: 18px;
+      font-size: 11px;
+      font-family: var(--font-body);
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      margin-top: 6px;
+    }
+    .btn-start:hover { background: var(--accent); }
+    .btn-start:active { background: var(--accent); opacity: 0.9; }
+    .btn-start:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; }
+
+    .legal {
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-top: 4px;
+    }
+
+    /* ═══════════════════════════════
+       MAP SCREEN
+    ═══════════════════════════════ */
+    #map-screen {
+      display: none;
+      height: 100dvh;
+      flex-direction: column;
+    }
+
+    /* Top bar */
+    #top-bar {
+      background: rgba(10,10,10,0.97);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .my-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--mid);
+      border: 1.5px solid var(--accent);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .my-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .bar-info {}
+    .bar-name {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--white);
+    }
+
+    .gps-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .gps-pill .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--muted2);
+    }
+    .gps-pill.active .dot { background: #5a9e6f; }
+    .gps-pill.active { color: #5a9e6f; }
+    .gps-pill.searching { color: var(--muted2); }
+
+    .btn-dnf {
+      background: transparent;
+      color: #9e5a5a;
+      border: 1px solid #3a2020;
+      border-radius: 2px;
+      padding: 7px 12px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      font-family: var(--font-body);
+    }
+    .btn-dnf:active { background: #3a2020; }
+
+    /* Map */
+    #map { flex: 1; }
+
+    /* Status strip */
+    #status-strip {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10,10,10,0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 900;
+      white-space: nowrap;
+    }
+    .strip-item {
+      text-align: center;
+    }
+    .strip-val {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1;
+    }
+    .strip-label {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-top: 2px;
+    }
+    .strip-sep {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+    }
+
+    /* Rider markers */
+    .rider-dot {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--dark);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+      cursor: pointer;
+    }
+    .rider-dot.is-me {
+      border-color: var(--white);
+      box-shadow: 0 0 0 2px var(--accent), 0 2px 12px rgba(0,0,0,0.6);
+    }
+    .rider-dot.dnf {
+      border-color: #4a2020;
+      opacity: 0.45;
+      filter: grayscale(1);
+    }
+    .rider-dot img { width: 100%; height: 100%; object-fit: cover; }
+    .rider-dot .init {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Tooltip */
+    .rider-tip {
+      background: rgba(10,10,10,0.95) !important;
+      border: 1px solid var(--border2) !important;
+      border-radius: 2px !important;
+      color: var(--text) !important;
+      font-family: var(--font-body) !important;
+      font-size: 11px !important;
+      font-weight: 500 !important;
+      padding: 4px 10px !important;
+      box-shadow: none !important;
+      white-space: nowrap;
+    }
+    .rider-tip::before { display: none !important; }
+    .leaflet-tooltip-top.rider-tip::before { display: none !important; }
+
+    /* DNF modal */
+    #dnf-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 2000;
+      align-items: flex-end;
+    }
+    #dnf-modal.open { display: flex; }
+
+    .dnf-sheet {
+      width: 100%;
+      background: var(--mid);
+      border-top: 1px solid var(--border2);
+      padding: 32px 24px 44px;
+    }
+    .dnf-eyebrow {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #9e5a5a;
+      margin-bottom: 10px;
+    }
+    .dnf-sheet h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 10px;
+    }
+    .dnf-sheet p {
+      font-size: 13px;
+      color: var(--muted2);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .dnf-btns { display: flex; gap: 10px; }
+    .btn-cancel {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 15px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-family: var(--font-body);
+      cursor: pointer;
+      border-radius: 0;
+    }
+    .btn-confirm-dnf {
+      flex: 1;
+      background: #8b2e2e;
+      border: none;
+      color: var(--white);
+      padding: 15px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-family: var(--font-body);
+      cursor: pointer;
+      border-radius: 0;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      top: 64px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--mid);
+      border: 1px solid var(--border2);
+      border-radius: 2px;
+      padding: 9px 18px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      z-index: 3000;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+      white-space: nowrap;
+      color: var(--text);
+    }
+    #toast.show { opacity: 1; }
+
+    /* Leaflet overrides */
+    .leaflet-control-zoom a {
+      background: rgba(10,10,10,0.9) !important;
+      color: var(--text) !important;
+      border-color: var(--border) !important;
+      font-size: 16px !important;
+    }
+    .leaflet-control-zoom a:hover { background: var(--mid) !important; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ REGISTRATION ═══ -->
+<div id="reg-screen">
+  <div class="brand-header">
+    <div class="musette-wordmark">Musette — Malmö</div>
+    <div class="event-title"><em>Skåne</em></div>
+    <div class="event-title" style="font-style:normal">Grus</div>
+    <div class="event-year">2026</div>
+    <div class="event-meta">
+      <span>27 Juni</span>
+      <span class="dot">·</span>
+      <span>300 km</span>
+      <span class="dot">·</span>
+      <span>2000 hm</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="reg-card">
+    <div class="field">
+      <label>Ditt namn</label>
+      <input type="text" id="name-input" placeholder="Förnamn Efternamn" maxlength="40" autocomplete="name">
+    </div>
+
+    <div class="field">
+      <label>Profilbild</label>
+      <div class="photo-row">
+        <div class="photo-circle" id="photo-circle" onclick="document.getElementById('photo-input').click()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="photo-text">
+          <p>Valfritt — visas som din markör på kartan</p>
+          <button onclick="document.getElementById('photo-input').click()">Välj bild →</button>
+        </div>
+      </div>
+      <input type="file" id="photo-input" accept="image/*">
+    </div>
+
+    <button class="btn-start" id="join-btn" onclick="handleJoin()">
+      Aktivera GPS-tracker
+    </button>
+
+    <p class="legal">
+      Deltagande sker på egen risk.<br>
+      Din position delas live med övriga deltagare.
+    </p>
+  </div>
+</div>
+
+<!-- ═══ MAP ═══ -->
+<div id="map-screen">
+  <div id="top-bar">
+    <div class="bar-left">
+      <div class="my-avatar" id="my-avatar"></div>
+      <div class="bar-info">
+        <div class="bar-name" id="bar-name">–</div>
+        <div class="gps-pill searching" id="gps-pill">
+          <span class="dot"></span>
+          <span id="gps-label">Söker GPS…</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn-dnf" onclick="showDNF()">Avbryt</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="status-strip">
+    <div class="strip-item">
+      <div class="strip-val" id="count-val">–</div>
+      <div class="strip-label">Cyklister</div>
+    </div>
+    <div class="strip-sep"></div>
+    <div class="strip-item">
+      <div class="strip-val" id="event-label">Skåne Grus</div>
+      <div class="strip-label">27 Juni 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- DNF Modal -->
+<div id="dnf-modal">
+  <div class="dnf-sheet">
+    <div class="dnf-eyebrow">Bekräfta</div>
+    <h2>Avbryta loppet?</h2>
+    <p>Du markeras som DNF på kartan för övriga deltagare. Det går inte att ångra.</p>
+    <div class="dnf-btns">
+      <button class="btn-cancel" onclick="closeDNF()">Fortsätt cykla</button>
+      <button class="btn-confirm-dnf" onclick="confirmDNF()">Ja, jag avbryter</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────
+const SERVER_URL = window.location.origin;
+const WS_URL = SERVER_URL.replace(/^http/, 'ws');
+
+// ─── STATE ────────────────────────────────────────
+let myId = null, myName = '', myPhoto = null, photoUrl = null;
+let ws = null, map = null, myMarker = null;
+let markers = {}, watchId = null, isDNF = false;
+
+// ─── REGISTRATION ─────────────────────────────────
+document.getElementById('photo-input').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const c = document.getElementById('photo-circle');
+    c.innerHTML = `<img src="${ev.target.result}" alt="">`;
+  };
+  reader.readAsDataURL(file);
+  const fd = new FormData();
+  fd.append('photo', file);
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    photoUrl = data.url;
+  } catch { showToast('Kunde inte ladda upp bilden'); }
+});
+
+async function handleJoin() {
+  const name = document.getElementById('name-input').value.trim();
+  if (!name) { showToast('Ange ditt namn för att fortsätta'); return; }
+  myId = crypto.randomUUID();
+  myName = name;
+  myPhoto = photoUrl || null;
+  document.getElementById('join-btn').disabled = true;
+  document.getElementById('join-btn').textContent = 'Ansluter…';
+  showMapScreen();
+}
+
+// ─── MAP SCREEN ───────────────────────────────────
+function showMapScreen() {
+  document.getElementById('reg-screen').style.display = 'none';
+  const ms = document.getElementById('map-screen');
+  ms.style.display = 'flex';
+
+  document.getElementById('bar-name').textContent = myName;
+  const av = document.getElementById('my-avatar');
+  if (myPhoto) {
+    av.innerHTML = `<img src="${myPhoto}" alt="">`;
+  } else {
+    av.innerHTML = `<span style="font-family:var(--font-display);font-size:14px;font-weight:600;color:#f5f2ed">${initials(myName)}</span>`;
+  }
+  initMap();
+  connectWS();
+  startGPS();
+}
+
+// ─── MAP ──────────────────────────────────────────
+function initMap() {
+  map = L.map('map', { zoomControl: false, attributionControl: false });
+
+  // Dark map tiles
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, subdomains: 'abcd'
+  }).addTo(map);
+
+  L.control.zoom({ position: 'topright' }).addTo(map);
+
+  // Draw route
+  if (typeof ROUTE_COORDS !== 'undefined' && ROUTE_COORDS && ROUTE_COORDS.length > 0) {
+    const route = L.polyline(ROUTE_COORDS, {
+      color: '#c8a96e',
+      weight: 2.5,
+      opacity: 0.75
+    }).addTo(map);
+    map.fitBounds(route.getBounds(), { padding: [44, 44] });
+
+    // Start marker
+    const mkStart = L.divIcon({
+      html: '<div style="background:#0a0a0a;color:#c8a96e;font-size:9px;font-weight:700;letter-spacing:0.18em;padding:4px 8px;border:1px solid #c8a96e;white-space:nowrap;font-family:degular,sans-serif">START</div>',
+      className: '', iconAnchor: [0, 14]
+    });
+    const mkMal = L.divIcon({
+      html: '<div style="background:#0a0a0a;color:#c8a96e;font-size:9px;font-weight:700;letter-spacing:0.18em;padding:4px 8px;border:1px solid #c8a96e;white-space:nowrap;font-family:degular,sans-serif">MÅL</div>',
+      className: '', iconAnchor: [0, 14]
+    });
+    L.marker(ROUTE_COORDS[0], { icon: mkStart }).addTo(map);
+    L.marker(ROUTE_COORDS[ROUTE_COORDS.length - 1], { icon: mkMal }).addTo(map);
+  } else {
+    map.setView([55.605, 13.003], 10);
+  }
+}
+
+// ─── WEBSOCKET ────────────────────────────────────
+function connectWS() {
+  ws = new WebSocket(WS_URL);
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: 'join', id: myId, name: myName, photo: myPhoto }));
+  };
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    switch (msg.type) {
+      case 'init':
+        msg.participants.forEach(p => { if (p.id !== myId) upsertMarker(p); });
+        updateCount();
+        break;
+      case 'joined':
+        if (msg.participant.id !== myId) {
+          upsertMarker(msg.participant);
+          showToast(`${msg.participant.name} anslöt`);
+          updateCount();
+        }
+        break;
+      case 'position':
+        if (msg.id !== myId) moveMarker(msg.id, msg.lat, msg.lng);
+        break;
+      case 'dnf':
+        setDNFMarker(msg.id);
+        updateCount();
+        break;
+    }
+  };
+  ws.onclose = () => setTimeout(connectWS, 3000);
+  ws.onerror = () => ws.close();
+}
+
+// ─── GPS ──────────────────────────────────────────
+function startGPS() {
+  if (!navigator.geolocation) { showToast('GPS stöds ej i denna webbläsare'); return; }
+  navigator.geolocation.getCurrentPosition(onPos, onGPSErr, { enableHighAccuracy: true, timeout: 15000 });
+  watchId = navigator.geolocation.watchPosition(onPos, onGPSErr, {
+    enableHighAccuracy: true, timeout: 30000, maximumAge: 25000
+  });
+}
+
+function onPos(pos) {
+  const { latitude: lat, longitude: lng } = pos.coords;
+  const pill = document.getElementById('gps-pill');
+  const lbl = document.getElementById('gps-label');
+  pill.className = 'gps-pill active';
+  lbl.textContent = 'GPS aktiv';
+
+  if (!myMarker) {
+    myMarker = makeMarker(myName, myPhoto, true);
+    myMarker.setLatLng([lat, lng]).addTo(map);
+    map.setView([lat, lng], 13);
+  } else {
+    myMarker.setLatLng([lat, lng]);
+  }
+
+  if (ws && ws.readyState === WebSocket.OPEN && !isDNF) {
+    ws.send(JSON.stringify({ type: 'position', lat, lng }));
+  }
+}
+
+function onGPSErr() {
+  const pill = document.getElementById('gps-pill');
+  const lbl = document.getElementById('gps-label');
+  pill.className = 'gps-pill searching';
+  lbl.textContent = 'Söker GPS…';
+}
+
+// ─── MARKERS ──────────────────────────────────────
+function makeMarker(name, photo, isMe = false) {
+  const inner = photo
+    ? `<img src="${photo}" alt="">`
+    : `<span class="init">${initials(name)}</span>`;
+  const html = `<div class="rider-dot${isMe ? ' is-me' : ''}">${inner}</div>`;
+  const icon = L.divIcon({ html, className: '', iconSize: [38, 38], iconAnchor: [19, 19] });
+  const m = L.marker([0, 0], { icon });
+  m.bindTooltip(name + (isMe ? ' ★' : ''), {
+    permanent: false, direction: 'top', offset: [0, -22], className: 'rider-tip'
+  });
+  return m;
+}
+
+function upsertMarker(p) {
+  if (markers[p.id] || !p.lat) return;
+  const m = makeMarker(p.name, p.photo);
+  m.setLatLng([p.lat, p.lng]).addTo(map);
+  markers[p.id] = m;
+}
+
+function moveMarker(id, lat, lng) {
+  if (markers[id]) markers[id].setLatLng([lat, lng]);
+}
+
+function setDNFMarker(id) {
+  if (!markers[id]) return;
+  const el = markers[id].getElement();
+  if (el) el.querySelector('.rider-dot').classList.add('dnf');
+}
+
+// ─── DNF ──────────────────────────────────────────
+function showDNF() { document.getElementById('dnf-modal').classList.add('open'); }
+function closeDNF() { document.getElementById('dnf-modal').classList.remove('open'); }
+function confirmDNF() {
+  isDNF = true;
+  closeDNF();
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'dnf' }));
+  if (watchId) navigator.geolocation.clearWatch(watchId);
+  if (myMarker) {
+    const el = myMarker.getElement();
+    if (el) el.querySelector('.rider-dot').classList.add('dnf');
+  }
+  const pill = document.getElementById('gps-pill');
+  const lbl = document.getElementById('gps-label');
+  pill.className = 'gps-pill';
+  pill.style.color = '#9e5a5a';
+  lbl.textContent = 'DNF';
+  document.querySelector('.btn-dnf').style.display = 'none';
+  showToast('Du är markerad som DNF');
+}
+
+// ─── HELPERS ──────────────────────────────────────
+function initials(n) { return n.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(); }
+
+function updateCount() {
+  const n = Object.keys(markers).length + (myMarker ? 1 : 0);
+  document.getElementById('count-val').textContent = n;
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+history.pushState(null, '', window.location.href);
+window.addEventListener('popstate', () => history.pushState(null, '', window.location.href));
+</script>
+</body>
+</html>
