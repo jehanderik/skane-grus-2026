@@ -37,8 +37,8 @@
       --white:   #ffffff;
       --green:   #4a7c59;
       --red:     #8b2e2e;
-      --font-display: 'degular';
-      --font-body:    'degular', -apple-system, sans-serif;
+      --font-display: degular-display, sans-serif;
+      --font-body:    degular-display, sans-serif;
     }
 
     html, body {
@@ -60,7 +60,7 @@
       align-items: center;
       justify-content: center;
       padding: 32px 20px 40px;
-      background: var(--black);
+      background: #c8a96e;
     }
 
     /* Header */
@@ -80,7 +80,9 @@
     }
 
     .event-title {
-      font-family: var(--font-display);
+      font-family: degular-display, sans-serif;
+font-weight: 700;
+font-style: normal;
       font-size: clamp(44px, 12vw, 64px);
       font-weight: 600;
       letter-spacing: -0.02em;
