@@ -120,3 +120,4 @@ Browser/PWA
 ├── WebSocket client
 └── navigator.geolocation
 ```
+# skane-grus-2026
