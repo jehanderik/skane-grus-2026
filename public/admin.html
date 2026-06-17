@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musette Admin</title>
+
+  <link rel="stylesheet" href="https://use.typekit.net/jcw2zfd.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0a0a0a;
+      --dark:    #111111;
+      --mid:     #1a1a1a;
+      --border:  #252525;
+      --border2: #333;
+      --text:    #f5f2ed;
+      --muted:   #666;
+      --muted2:  #888;
+      --accent:  #E9BD4A;
+      --white:   #ffffff;
+      --red:     #8b2e2e;
+    }
+
+    html, body {
+      height: 100%; background: var(--black); color: var(--text);
+      font-family: degular-display, sans-serif; font-weight: 700; font-style: normal;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LOGIN ───────────────────────────────────────── */
+    #login-screen {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    .login-card {
+      width: 100%; max-width: 340px; padding: 0 24px;
+    }
+    .login-logo { margin-bottom: 36px; }
+    .login-logo img { height: 24px; opacity: 0.85; }
+    .login-title { font-size: 22px; color: var(--white); margin-bottom: 6px; }
+    .login-sub { font-size: 11px; color: var(--muted2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 32px; }
+
+    .login-field { margin-bottom: 24px; }
+    .login-field label { display: block; font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted2); margin-bottom: 9px; }
+    .login-field input {
+      width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border2);
+      padding: 10px 0 12px; font-size: 17px; font-family: degular-display, sans-serif;
+      font-weight: 700; font-style: normal; color: var(--text); outline: none;
+      transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+    }
+    .login-field input:focus { border-bottom-color: var(--accent); }
+
+    .btn-login {
+      width: 100%; background: var(--white); color: var(--black); border: none; padding: 16px;
+      font-size: 10px; font-family: degular-display, sans-serif; font-weight: 700; font-style: normal;
+      letter-spacing: 0.22em; text-transform: uppercase; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-login:hover { background: var(--accent); }
+    .login-error { font-size: 11px; color: #c05a5a; margin-top: 12px; text-align: center; min-height: 16px; }
+
+    /* ── ADMIN LAYOUT ────────────────────────────────── */
+    #admin-screen {
+      display: none; height: 100vh; flex-direction: column;
+    }
+
+    /* Header */
+    #admin-header {
+      background: rgba(10,10,10,0.97); border-bottom: 1px solid var(--border);
+      padding: 0 20px; height: 52px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .admin-header-left { display: flex; align-items: center; gap: 16px; }
+    .admin-logo img { height: 20px; opacity: 0.85; }
+    .admin-title { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted2); }
+
+    .btn-logout {
+      background: transparent; border: 1px solid var(--border2); color: var(--muted2);
+      padding: 6px 14px; font-size: 9px; font-family: degular-display, sans-serif; font-weight: 700;
+      font-style: normal; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s; border-radius: 2px;
+    }
+    .btn-logout:hover { border-color: var(--muted2); color: var(--text); }
+
+    /* Body */
+    #admin-body {
+      flex: 1; display: flex; overflow: hidden;
+    }
+
+    /* Sidebar */
+    #sidebar {
+      width: 320px; flex-shrink: 0; background: var(--dark);
+      border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    .sidebar-scroll { flex: 1; overflow-y: auto; padding: 0 0 20px; }
+
+    .section { border-bottom: 1px solid var(--border); padding: 18px 16px; }
+    .section:last-child { border-bottom: none; }
+
+    .section-title {
+      font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--muted2); margin-bottom: 14px;
+    }
+
+    /* Route section */
+    .route-info { font-size: 12px; color: var(--muted2); margin-bottom: 12px; min-height: 18px; }
+    .route-info span { color: var(--accent); }
+
+    .btn-upload {
+      display: inline-block; background: transparent; border: 1px solid var(--border2); color: var(--text);
+      padding: 9px 16px; font-size: 10px; font-family: degular-display, sans-serif; font-weight: 700;
+      font-style: normal; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer;
+      transition: border-color 0.2s; border-radius: 2px; width: 100%; text-align: center;
+    }
+    .btn-upload:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Checkpoint section */
+    .cp-hint {
+      font-size: 11px; color: var(--muted); margin-bottom: 12px; line-height: 1.5;
+    }
+    .cp-hint.active { color: var(--accent); }
+
+    .cp-edit-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+
+    .cp-edit-row {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--mid); border: 1px solid var(--border2); border-radius: 2px; padding: 8px 10px;
+    }
+    .cp-edit-num {
+      width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: var(--accent); flex-shrink: 0;
+    }
+    .cp-edit-name {
+      flex: 1; background: transparent; border: none; outline: none; color: var(--text);
+      font-family: degular-display, sans-serif; font-weight: 700; font-style: normal; font-size: 13px;
+      min-width: 0;
+    }
+    .cp-edit-name::placeholder { color: var(--muted); }
+    .cp-edit-coords { font-size: 9px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+
+    .cp-edit-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .btn-cp-up, .btn-cp-down, .btn-cp-del {
+      background: transparent; border: none; color: var(--muted2); cursor: pointer;
+      padding: 2px 4px; font-size: 12px; line-height: 1; transition: color 0.15s;
+    }
+    .btn-cp-up:hover, .btn-cp-down:hover { color: var(--text); }
+    .btn-cp-del:hover { color: #c05a5a; }
+
+    .btn-add-cp {
+      width: 100%; background: transparent; border: 1px dashed var(--border2); color: var(--muted2);
+      padding: 9px; font-size: 10px; font-family: degular-display, sans-serif; font-weight: 700;
+      font-style: normal; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer;
+      border-radius: 2px; transition: border-color 0.2s, color 0.2s; margin-bottom: 14px;
+    }
+    .btn-add-cp:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-add-cp.picking { border-color: var(--accent); color: var(--accent); background: rgba(233,189,74,0.05); }
+
+    .btn-save {
+      width: 100%; background: var(--white); color: var(--black); border: none; padding: 12px;
+      font-size: 10px; font-family: degular-display, sans-serif; font-weight: 700; font-style: normal;
+      letter-spacing: 0.22em; text-transform: uppercase; cursor: pointer; transition: background 0.15s; border-radius: 2px;
+    }
+    .btn-save:hover { background: var(--accent); }
+    .btn-save:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; }
+
+    /* Participants section */
+    .participant-count { font-size: 11px; color: var(--muted2); margin-bottom: 12px; }
+    .participant-count span { color: var(--white); }
+
+    .p-table { width: 100%; border-collapse: collapse; }
+    .p-table th {
+      font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+      padding: 4px 0; text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .p-table td { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text); vertical-align: middle; }
+    .p-table tr:last-child td { border-bottom: none; }
+    .p-name { font-size: 13px; }
+    .p-progress { color: var(--muted2); font-size: 11px; }
+    .p-progress span { color: var(--accent); }
+    .p-status-dnf { font-size: 9px; letter-spacing: 0.1em; color: #9e5a5a; text-transform: uppercase; }
+    .p-empty { font-size: 11px; color: var(--muted); padding: 8px 0; }
+
+    .btn-reset {
+      width: 100%; background: transparent; border: 1px solid #3a2020; color: #9e5a5a;
+      padding: 10px; font-size: 10px; font-family: degular-display, sans-serif; font-weight: 700;
+      font-style: normal; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+      border-radius: 2px; transition: background 0.2s; margin-top: 14px;
+    }
+    .btn-reset:hover { background: #3a2020; }
+
+    /* Map */
+    #admin-map { flex: 1; cursor: crosshair; }
+    #admin-map.normal { cursor: default; }
+
+    .map-hint {
+      position: absolute; top: 62px; left: 50%; transform: translateX(-50%);
+      background: rgba(233,189,74,0.9); color: #0a0a0a;
+      padding: 8px 18px; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      font-family: degular-display, sans-serif; font-weight: 700;
+      border-radius: 2px; z-index: 1000; pointer-events: none;
+      display: none; white-space: nowrap;
+    }
+    .map-hint.show { display: block; }
+
+    /* Admin map markers */
+    .admin-cp-marker {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--black); border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--accent);
+      font-family: degular-display, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      cursor: pointer;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--mid); border: 1px solid var(--border2); border-radius: 2px;
+      padding: 9px 18px; font-size: 12px; letter-spacing: 0.04em;
+      z-index: 5000; opacity: 0; transition: opacity 0.25s; pointer-events: none;
+      white-space: nowrap; color: var(--text);
+    }
+    #toast.show { opacity: 1; }
+
+    /* Leaflet overrides */
+    .leaflet-control-zoom a { background: rgba(10,10,10,0.9) !important; color: var(--text) !important; border-color: var(--border) !important; }
+    .leaflet-control-zoom a:hover { background: var(--mid) !important; }
+    .admin-tip {
+      background: rgba(10,10,10,0.95) !important; border: 1px solid var(--border2) !important;
+      border-radius: 2px !important; color: var(--text) !important;
+      font-family: degular-display, sans-serif !important; font-weight: 700 !important;
+      font-size: 11px !important; padding: 4px 10px !important; box-shadow: none !important;
+    }
+    .admin-tip::before { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><img src="icons/musette_mlogo-white.svg" alt="Musette"></div>
+    <div class="login-title">Admin</div>
+    <div class="login-sub">Skåne Grus 2026</div>
+    <div class="login-field">
+      <label>Lösenord</label>
+      <input type="password" id="pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Logga in</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN ═══ -->
+<div id="admin-screen">
+  <div id="admin-header">
+    <div class="admin-header-left">
+      <div class="admin-logo"><img src="icons/musette_mlogo-white.svg" alt="Musette"></div>
+      <div class="admin-title">Admin</div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Logga ut</button>
+  </div>
+
+  <div id="admin-body">
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <div class="sidebar-scroll">
+
+        <!-- Route -->
+        <div class="section">
+          <div class="section-title">Rutt</div>
+          <div class="route-info" id="route-info">Ingen rutt uppladdad</div>
+          <label class="btn-upload">
+            Ladda upp GPX-fil
+            <input type="file" accept=".gpx" style="display:none" onchange="uploadGPX(this)">
+          </label>
+        </div>
+
+        <!-- Checkpoints -->
+        <div class="section">
+          <div class="section-title">Checkpoints</div>
+          <p class="cp-hint" id="cp-hint">Klicka på "Lägg till" och sedan på kartan för att placera en checkpoint.</p>
+          <div class="cp-edit-list" id="cp-edit-list"></div>
+          <button class="btn-add-cp" id="btn-add" onclick="togglePicking()">+ Lägg till checkpoint</button>
+          <button class="btn-save" id="btn-save" onclick="saveCheckpoints()">Spara checkpoints</button>
+        </div>
+
+        <!-- Participants -->
+        <div class="section">
+          <div class="section-title">Deltagare</div>
+          <div class="participant-count" id="p-count">Inga deltagare ännu</div>
+          <table class="p-table">
+            <thead>
+              <tr>
+                <th>Namn</th>
+                <th>Progress</th>
+              </tr>
+            </thead>
+            <tbody id="p-tbody">
+              <tr><td colspan="2" class="p-empty">–</td></tr>
+            </tbody>
+          </table>
+          <button class="btn-reset" onclick="resetRace()">Återställ lopp</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div style="flex:1;position:relative;">
+      <div class="map-hint" id="map-hint">Klicka på kartan för att placera checkpoint</div>
+      <div id="admin-map"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let token = sessionStorage.getItem('admin_token') || '';
+let map = null;
+let checkpoints = [];   // { id, name, lat, lng, radius }
+let routeCoords = [];
+let cpMapMarkers = {};  // id → leaflet marker
+let picking = false;
+let pollTimer = null;
+
+// ── Login ──────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error || 'Fel lösenord'; return; }
+    token = data.token;
+    sessionStorage.setItem('admin_token', token);
+    showAdmin();
+  } catch { err.textContent = 'Serverfel — försök igen'; }
+}
+
+function doLogout() {
+  token = '';
+  sessionStorage.removeItem('admin_token');
+  clearInterval(pollTimer);
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ── Admin init ─────────────────────────────────────────────────────────────
+async function showAdmin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'flex';
+  initMap();
+  await loadRace();
+  pollTimer = setInterval(pollParticipants, 5000);
+  pollParticipants();
+}
+
+function api(path, opts = {}) {
+  return fetch(path, { ...opts, headers: { ...(opts.headers || {}), 'Authorization': `Bearer ${token}` } });
+}
+
+async function loadRace() {
+  try {
+    const data = await api('/api/admin/race').then(r => r.json());
+    checkpoints = data.checkpoints || [];
+    routeCoords = data.routeCoords || [];
+    applyRoute();
+    rebuildMarkers();
+    renderCPList();
+    updateRouteInfo();
+  } catch { showToast('Kunde inte hämta racedata'); }
+}
+
+// ── Map ────────────────────────────────────────────────────────────────────
+function initMap() {
+  map = L.map('admin-map', { zoomControl: false, attributionControl: false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, subdomains: 'abcd'
+  }).addTo(map);
+  L.control.zoom({ position: 'topright' }).addTo(map);
+  map.setView([55.9, 13.5], 8);
+
+  map.on('click', e => {
+    if (!picking) return;
+    addCheckpointAt(e.latlng.lat, e.latlng.lng);
+    stopPicking();
+  });
+}
+
+function applyRoute() {
+  map.eachLayer(l => { if (l instanceof L.Polyline) l.remove(); });
+  if (!routeCoords.length) return;
+  const route = L.polyline(routeCoords, { color: '#E9BD4A', weight: 2.5, opacity: 0.65 }).addTo(map);
+  map.fitBounds(route.getBounds(), { padding: [44, 44] });
+}
+
+// ── Checkpoint picking ─────────────────────────────────────────────────────
+function togglePicking() {
+  picking ? stopPicking() : startPicking();
+}
+
+function startPicking() {
+  picking = true;
+  document.getElementById('btn-add').classList.add('picking');
+  document.getElementById('btn-add').textContent = '✕ Avbryt';
+  document.getElementById('map-hint').classList.add('show');
+  document.getElementById('admin-map').style.cursor = 'crosshair';
+}
+
+function stopPicking() {
+  picking = false;
+  document.getElementById('btn-add').classList.remove('picking');
+  document.getElementById('btn-add').textContent = '+ Lägg till checkpoint';
+  document.getElementById('map-hint').classList.remove('show');
+  document.getElementById('admin-map').style.cursor = '';
+}
+
+function addCheckpointAt(lat, lng) {
+  const id = Date.now();
+  const name = `Checkpoint ${checkpoints.length + 1}`;
+  checkpoints.push({ id, name, lat, lng, radius: 500 });
+  rebuildMarkers();
+  renderCPList();
+  // Focus the name input for the new checkpoint
+  setTimeout(() => {
+    const input = document.querySelector(`[data-cp-id="${id}"] .cp-edit-name`);
+    if (input) { input.focus(); input.select(); }
+  }, 50);
+}
+
+// ── Checkpoint markers on map ──────────────────────────────────────────────
+function rebuildMarkers() {
+  Object.values(cpMapMarkers).forEach(m => m.remove());
+  cpMapMarkers = {};
+  checkpoints.forEach((cp, i) => {
+    const icon = L.divIcon({
+      html: `<div class="admin-cp-marker">${i + 1}</div>`,
+      className: '', iconSize: [32, 32], iconAnchor: [16, 16]
+    });
+    cpMapMarkers[cp.id] = L.marker([cp.lat, cp.lng], { icon })
+      .bindTooltip(cp.name || `CP ${i+1}`, { permanent: false, direction: 'top', offset: [0,-20], className: 'admin-tip' })
+      .addTo(map);
+  });
+}
+
+// ── Checkpoint sidebar list ────────────────────────────────────────────────
+function renderCPList() {
+  const list = document.getElementById('cp-edit-list');
+  if (!checkpoints.length) { list.innerHTML = ''; return; }
+
+  list.innerHTML = checkpoints.map((cp, i) => `
+    <div class="cp-edit-row" data-cp-id="${cp.id}">
+      <div class="cp-edit-num">${i + 1}</div>
+      <input class="cp-edit-name" type="text" value="${cp.name}" placeholder="Namn"
+        oninput="updateCPName(${cp.id}, this.value)">
+      <div class="cp-edit-coords">${cp.lat.toFixed(4)}, ${cp.lng.toFixed(4)}</div>
+      <div class="cp-edit-actions">
+        ${i > 0 ? `<button class="btn-cp-up" onclick="moveCP(${i}, -1)" title="Flytta upp">↑</button>` : '<span style="width:20px"></span>'}
+        ${i < checkpoints.length - 1 ? `<button class="btn-cp-down" onclick="moveCP(${i}, 1)" title="Flytta ned">↓</button>` : '<span style="width:20px"></span>'}
+        <button class="btn-cp-del" onclick="deleteCP(${cp.id})" title="Ta bort">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function updateCPName(id, value) {
+  const cp = checkpoints.find(c => c.id === id);
+  if (cp) {
+    cp.name = value;
+    if (cpMapMarkers[id]) cpMapMarkers[id].setTooltipContent(value || `CP`);
+  }
+}
+
+function moveCP(index, dir) {
+  const newIndex = index + dir;
+  if (newIndex < 0 || newIndex >= checkpoints.length) return;
+  [checkpoints[index], checkpoints[newIndex]] = [checkpoints[newIndex], checkpoints[index]];
+  rebuildMarkers();
+  renderCPList();
+}
+
+function deleteCP(id) {
+  checkpoints = checkpoints.filter(c => c.id !== id);
+  rebuildMarkers();
+  renderCPList();
+}
+
+// ── Save checkpoints ───────────────────────────────────────────────────────
+async function saveCheckpoints() {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.textContent = 'Sparar…';
+  try {
+    const res = await api('/api/admin/checkpoints', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checkpoints })
+    });
+    if (res.ok) { showToast(`✓ ${checkpoints.length} checkpoints sparade`); }
+    else showToast('Fel vid sparning');
+  } catch { showToast('Serverfel'); }
+  finally { btn.disabled = false; btn.textContent = 'Spara checkpoints'; }
+}
+
+// ── GPX upload ─────────────────────────────────────────────────────────────
+async function uploadGPX(input) {
+  const file = input.files[0];
+  if (!file) return;
+  showToast('Laddar upp rutt…');
+  const fd = new FormData();
+  fd.append('gpx', file);
+  try {
+    const res = await api('/api/admin/route', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (res.ok) {
+      routeCoords = [];
+      await loadRace();
+      showToast(`✓ Rutt uppladdad — ${data.points} punkter`);
+    } else {
+      showToast(data.error || 'Fel vid uppladdning');
+    }
+  } catch { showToast('Serverfel'); }
+  input.value = '';
+}
+
+function updateRouteInfo() {
+  const el = document.getElementById('route-info');
+  el.innerHTML = routeCoords.length
+    ? `<span>${routeCoords.length}</span> koordinater inladdade`
+    : 'Ingen rutt uppladdad';
+}
+
+// ── Participants ───────────────────────────────────────────────────────────
+async function pollParticipants() {
+  try {
+    const ps = await api('/api/admin/participants').then(r => r.json());
+    renderParticipants(ps);
+  } catch {}
+}
+
+function renderParticipants(ps) {
+  const count = document.getElementById('p-count');
+  const tbody = document.getElementById('p-tbody');
+  const active = ps.filter(p => p.status !== 'dnf');
+  const total = checkpoints.length;
+
+  count.innerHTML = ps.length
+    ? `<span>${ps.length}</span> deltagare anslutna (${active.length} aktiva)`
+    : 'Inga deltagare ännu';
+
+  if (!ps.length) {
+    tbody.innerHTML = '<tr><td colspan="2" class="p-empty">–</td></tr>';
+    return;
+  }
+
+  // Sort by most checkpoints done
+  const sorted = [...ps].sort((a, b) => (b.checkIns?.length || 0) - (a.checkIns?.length || 0));
+
+  tbody.innerHTML = sorted.map(p => {
+    const done = p.checkIns?.length || 0;
+    const lastCP = p.checkIns?.length
+      ? checkpoints.find(c => c.id === p.checkIns[p.checkIns.length - 1].checkpointId)
+      : null;
+    const statusCell = p.status === 'dnf'
+      ? `<span class="p-status-dnf">DNF</span>`
+      : total
+        ? `<span>${done}/${total}</span>${lastCP ? ` · ${lastCP.name}` : ''}`
+        : `<span>${done}</span>`;
+    return `
+      <tr>
+        <td class="p-name">${p.name}</td>
+        <td class="p-progress">${statusCell}</td>
+      </tr>`;
+  }).join('');
+}
+
+async function resetRace() {
+  if (!confirm('Återställa loppet? Alla deltagare och incheckningar raderas.')) return;
+  try {
+    await api('/api/admin/reset', { method: 'POST' });
+    showToast('Loppet återställt');
+    pollParticipants();
+  } catch { showToast('Serverfel'); }
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Auto-login if token in session ────────────────────────────────────────
+if (token) {
+  showAdmin().catch(() => {
+    token = '';
+    sessionStorage.removeItem('admin_token');
+  });
+}
+</script>
+</body>
+</html>

@@ -11,15 +11,9 @@
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <title>Skåne Grus 2026 – Live Tracker</title>
 
-  <!-- Musette fonts: Degular via Adobe Fonts -->
   <link rel="stylesheet" href="https://use.typekit.net/jcw2zfd.css">
-
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
-  <!-- Route data -->
-  <script src="/route-data.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,26 +27,22 @@
       --text:    #f5f2ed;
       --muted:   #666;
       --muted2:  #888;
-      --accent:  #E9BD4A;   /* Musette gold/sand */
+      --accent:  #E9BD4A;
       --white:   #ffffff;
-      --green:   #4a7c59;
-      --red:     #8b2e2e;
-      --font-display: degular-display, sans-serif;
-      --font-body:    degular-display, sans-serif;
     }
 
     html, body {
       height: 100%;
       background: var(--black);
       color: var(--text);
-      font-family: var(--font-body);
+      font-family: degular-display, sans-serif;
+      font-weight: 700;
+      font-style: normal;
       -webkit-tap-highlight-color: transparent;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ═══════════════════════════════
-       REGISTRATION SCREEN
-    ═══════════════════════════════ */
+    /* ── REGISTRATION ───────────────────────────────── */
     #reg-screen {
       min-height: 100dvh;
       display: flex;
@@ -60,41 +50,28 @@
       align-items: center;
       justify-content: center;
       padding: 32px 20px 40px;
-      background: #000000;
     }
 
-    /* Header */
-    .brand-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .musette-wordmark img{
-      width: 100px;
-      height: auto;
-      margin-bottom: 40px;
-    }
+    .brand-header { text-align: center; margin-bottom: 40px; }
+    .musette-wordmark img { height: 28px; opacity: 0.9; }
 
     .event-title {
       font-family: degular-display, sans-serif;
-font-weight: 700;
-font-style: normal;
+      font-weight: 700;
+      font-style: normal;
       font-size: clamp(44px, 12vw, 64px);
-      font-weight: 600;
       letter-spacing: -0.02em;
       line-height: 0.92;
       color: var(--white);
       margin-bottom: 6px;
     }
-
-    .event-title em {
-      color: var(--white);
-    }
+    .event-title em { font-style: italic; color: var(--accent); }
 
     .event-year {
-      font-family: var(--font-display);
-      font-size: 2em;
-      font-weight: 300;
+      font-family: degular-display, sans-serif;
+      font-weight: 700;
+      font-style: normal;
+      font-size: clamp(44px, 12vw, 64px);
       letter-spacing: 0.06em;
       color: var(--muted);
       line-height: 0.92;
@@ -102,416 +79,180 @@ font-style: normal;
 
     .event-meta {
       margin-top: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-size: 11px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted2);
-      font-weight: 500;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted2);
     }
     .event-meta .dot { color: var(--accent); }
 
-    /* Divider */
-    .divider {
-      width: 20px;
-      height: 0px;
-      background: var(--border2);
-      margin: 28px auto;
-    }
+    .divider { width: 40px; height: 1px; background: var(--border2); margin: 28px auto; }
 
-    /* Form card */
-    .reg-card {
-      width: 100%;
-      max-width: 380px;
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
+    .reg-card { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 22px; }
 
     .field label {
-      display: block;
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--muted2);
-      margin-bottom: 9px;
+      display: block; font-size: 9px; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--muted2); margin-bottom: 9px;
     }
-
     .field input[type="text"] {
-      width: 100%;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid var(--border2);
-      padding: 10px 0 12px;
-      font-size: 18px;
-      font-family: var(--font-display);
-      font-weight: 400;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.2s;
-      border-radius: 0;
-      appearance: none;
-      -webkit-appearance: none;
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid var(--border2); padding: 10px 0 12px;
+      font-size: 18px; font-family: degular-display, sans-serif; font-weight: 700;
+      font-style: normal; color: var(--text); outline: none;
+      transition: border-color 0.2s; border-radius: 0; appearance: none; -webkit-appearance: none;
     }
     .field input[type="text"]::placeholder { color: var(--muted); }
     .field input[type="text"]:focus { border-bottom-color: var(--accent); }
 
-    /* Photo upload */
-    .photo-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
+    .photo-row { display: flex; align-items: center; gap: 16px; }
     .photo-circle {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      border: 1px solid var(--border2);
-      background: var(--mid);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      flex-shrink: 0;
-      cursor: pointer;
-      transition: border-color 0.2s;
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 1px solid var(--border2); background: var(--mid);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0; cursor: pointer; transition: border-color 0.2s;
     }
     .photo-circle:active { border-color: var(--accent); }
     .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
-
-    .photo-text {
-      flex: 1;
-    }
-    .photo-text p {
-      font-size: 13px;
-      color: var(--muted2);
-      line-height: 1.5;
-    }
+    .photo-text p { font-size: 13px; color: var(--muted2); line-height: 1.5; }
     .photo-text button {
-      margin-top: 8px;
-      background: none;
-      border: none;
-      color: var(--accent);
-      font-size: 12px;
-      font-family: var(--font-body);
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      padding: 0;
+      margin-top: 8px; background: none; border: none; color: var(--accent);
+      font-size: 12px; font-family: degular-display, sans-serif; font-weight: 700;
+      font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; padding: 0;
     }
-
     #photo-input { display: none; }
 
-    /* CTA button */
     .btn-start {
-      width: 100%;
-      background: var(--white);
-      color: var(--black);
-      border: none;
-      border-radius: 0;
-      padding: 18px;
-      font-size: 11px;
-      font-family: var(--font-body);
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      margin-top: 6px;
+      width: 100%; background: var(--white); color: var(--black); border: none;
+      border-radius: 0; padding: 18px; font-size: 11px;
+      font-family: degular-display, sans-serif; font-weight: 700; font-style: normal;
+      letter-spacing: 0.22em; text-transform: uppercase; cursor: pointer;
+      transition: background 0.15s; margin-top: 6px;
     }
     .btn-start:hover { background: var(--accent); }
     .btn-start:active { background: var(--accent); opacity: 0.9; }
     .btn-start:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; }
 
-    .legal {
-      text-align: center;
-      font-size: 10px;
-      color: var(--muted);
-      line-height: 1.6;
-      margin-top: 4px;
-    }
+    .legal { text-align: center; font-size: 10px; color: var(--muted); line-height: 1.6; margin-top: 4px; }
 
-    /* ═══════════════════════════════
-       MAP SCREEN
-    ═══════════════════════════════ */
-    #map-screen {
-      display: none;
-      height: 100dvh;
-      flex-direction: column;
-    }
+    /* ── MAP SCREEN ─────────────────────────────────── */
+    #map-screen { display: none; height: 100dvh; flex-direction: column; }
 
-    /* Top bar */
     #top-bar {
-      background: rgba(10,10,10,0.97);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(10,10,10,0.97); border-bottom: 1px solid var(--border);
+      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     }
-
-    .bar-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
+    .bar-left { display: flex; align-items: center; gap: 10px; }
     .my-avatar {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: var(--mid);
-      border: 1.5px solid var(--accent);
-      overflow: hidden;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 34px; height: 34px; border-radius: 50%; background: var(--mid);
+      border: 1.5px solid var(--accent); overflow: hidden; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
     }
     .my-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-    
-    .bar-name {
-      font-family: var(--font-display);
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 1.1;
-      color: var(--white);
-    }
-
-    .gps-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-top: 2px;
-    }
-    .gps-pill .dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--muted2);
-    }
-    .gps-pill.active .dot { background: #5a9e6f; }
-    .gps-pill.active { color: #5a9e6f; }
-    .gps-pill.searching { color: var(--muted2); }
+    .bar-name { font-family: degular-display, sans-serif; font-weight: 700; font-style: normal; font-size: 15px; line-height: 1.1; color: var(--white); }
+    .bar-sub { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); margin-top: 2px; }
 
     .btn-dnf {
-      background: transparent;
-      color: #9e5a5a;
-      border: 1px solid #3a2020;
-      border-radius: 2px;
-      padding: 7px 12px;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      font-family: var(--font-body);
+      background: transparent; color: #9e5a5a; border: 1px solid #3a2020;
+      border-radius: 2px; padding: 7px 12px; font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+      font-family: degular-display, sans-serif; font-style: normal;
     }
     .btn-dnf:active { background: #3a2020; }
 
-    /* Map */
-    #map { flex: 1; }
+    #map { flex: 1; min-height: 0; }
 
-    /* Status strip */
-    #status-strip {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(10,10,10,0.9);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      padding: 8px 18px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      z-index: 900;
-      white-space: nowrap;
+    /* ── CHECKPOINT PANEL ───────────────────────────── */
+    #cp-panel {
+      background: var(--dark); border-top: 1px solid var(--border);
+      flex-shrink: 0; display: flex; flex-direction: column; max-height: 42vh;
     }
-    .strip-item {
-      text-align: center;
+    .cp-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px 8px; border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
-    .strip-val {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--white);
-      line-height: 1;
+    .cp-panel-title { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted2); }
+    .cp-panel-progress { font-size: 11px; color: var(--accent); letter-spacing: 0.05em; }
+
+    .cp-list { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+    .cp-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
     }
-    .strip-label {
-      font-size: 8px;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted2);
-      margin-top: 2px;
+    .cp-row:last-child { border-bottom: none; }
+    .cp-row.done { opacity: 0.6; }
+
+    .cp-num {
+      width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; flex-shrink: 0; transition: border-color 0.2s, color 0.2s; color: var(--muted2);
     }
-    .strip-sep {
-      width: 1px;
-      height: 28px;
-      background: var(--border);
+    .cp-row.done .cp-num { border-color: var(--accent); color: var(--accent); background: rgba(233,189,74,0.08); }
+
+    .cp-info { flex: 1; min-width: 0; }
+    .cp-name { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cp-row.done .cp-name { color: var(--muted2); }
+    .cp-meta { font-size: 10px; color: var(--muted2); margin-top: 2px; letter-spacing: 0.05em; }
+    .cp-meta.done-time { color: var(--accent); }
+
+    .cp-action { flex-shrink: 0; }
+
+    .btn-checkin {
+      background: var(--white); color: var(--black); border: none; border-radius: 2px;
+      padding: 8px 14px; font-size: 10px; font-family: degular-display, sans-serif;
+      font-weight: 700; font-style: normal; letter-spacing: 0.15em; text-transform: uppercase;
+      cursor: pointer; white-space: nowrap; transition: background 0.15s;
     }
+    .btn-checkin:hover { background: var(--accent); }
+    .btn-checkin:active { background: var(--accent); opacity: 0.9; }
+    .btn-checkin:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; }
+
+    .cp-done-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 16px; }
+    .cp-empty { padding: 24px 16px; font-size: 12px; color: var(--muted); text-align: center; letter-spacing: 0.05em; }
 
     /* Rider markers */
     .rider-dot {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 2px solid var(--accent);
-      background: var(--dark);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.6);
-      cursor: pointer;
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid var(--accent); background: var(--dark);
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.6); cursor: pointer;
     }
-    .rider-dot.is-me {
-      border-color: var(--white);
-      box-shadow: 0 0 0 2px var(--accent), 0 2px 12px rgba(0,0,0,0.6);
-    }
-    .rider-dot.dnf {
-      border-color: #4a2020;
-      opacity: 0.45;
-      filter: grayscale(1);
-    }
+    .rider-dot.is-me { border-color: var(--white); box-shadow: 0 0 0 2px var(--accent), 0 2px 10px rgba(0,0,0,0.6); }
+    .rider-dot.dnf { border-color: #4a2020; opacity: 0.45; filter: grayscale(1); }
     .rider-dot img { width: 100%; height: 100%; object-fit: cover; }
-    .rider-dot .init {
-      font-family: var(--font-display);
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-    }
+    .rider-dot .init { font-family: degular-display, sans-serif; font-size: 12px; font-weight: 700; color: var(--text); }
 
-    /* Tooltip */
+    .cp-marker {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--black);
+      border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--accent);
+      font-family: degular-display, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .cp-marker.reached { background: rgba(233,189,74,0.15); }
+
     .rider-tip {
-      background: rgba(10,10,10,0.95) !important;
-      border: 1px solid var(--border2) !important;
-      border-radius: 2px !important;
-      color: var(--text) !important;
-      font-family: var(--font-body) !important;
-      font-size: 11px !important;
-      font-weight: 500 !important;
-      padding: 4px 10px !important;
-      box-shadow: none !important;
-      white-space: nowrap;
+      background: rgba(10,10,10,0.95) !important; border: 1px solid var(--border2) !important;
+      border-radius: 2px !important; color: var(--text) !important;
+      font-family: degular-display, sans-serif !important; font-weight: 700 !important;
+      font-style: normal !important; font-size: 11px !important; padding: 4px 10px !important;
+      box-shadow: none !important; white-space: nowrap;
     }
     .rider-tip::before { display: none !important; }
-    .leaflet-tooltip-top.rider-tip::before { display: none !important; }
 
     /* DNF modal */
-    #dnf-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      z-index: 2000;
-      align-items: flex-end;
-    }
+    #dnf-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 2000; align-items: flex-end; }
     #dnf-modal.open { display: flex; }
-
-    .dnf-sheet {
-      width: 100%;
-      background: var(--mid);
-      border-top: 1px solid var(--border2);
-      padding: 32px 24px 44px;
-    }
-    .dnf-eyebrow {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: #9e5a5a;
-      margin-bottom: 10px;
-    }
-    .dnf-sheet h2 {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--white);
-      margin-bottom: 10px;
-    }
-    .dnf-sheet p {
-      font-size: 13px;
-      color: var(--muted2);
-      line-height: 1.6;
-      margin-bottom: 28px;
-    }
+    .dnf-sheet { width: 100%; background: var(--mid); border-top: 1px solid var(--border2); padding: 32px 24px 44px; }
+    .dnf-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: #9e5a5a; margin-bottom: 10px; }
+    .dnf-sheet h2 { font-family: degular-display, sans-serif; font-weight: 700; font-style: normal; font-size: 28px; color: var(--white); margin-bottom: 10px; }
+    .dnf-sheet p { font-size: 13px; color: var(--muted2); line-height: 1.6; margin-bottom: 28px; }
     .dnf-btns { display: flex; gap: 10px; }
-    .btn-cancel {
-      flex: 1;
-      background: transparent;
-      border: 1px solid var(--border2);
-      color: var(--text);
-      padding: 15px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      font-family: var(--font-body);
-      cursor: pointer;
-      border-radius: 0;
-    }
-    .btn-confirm-dnf {
-      flex: 1;
-      background: #8b2e2e;
-      border: none;
-      color: var(--white);
-      padding: 15px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      font-family: var(--font-body);
-      cursor: pointer;
-      border-radius: 0;
-    }
+    .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border2); color: var(--text); padding: 15px; font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-family: degular-display, sans-serif; font-style: normal; cursor: pointer; border-radius: 0; }
+    .btn-confirm-dnf { flex: 1; background: #8b2e2e; border: none; color: var(--white); padding: 15px; font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-family: degular-display, sans-serif; font-style: normal; cursor: pointer; border-radius: 0; }
 
-    /* Toast */
-    #toast {
-      position: fixed;
-      top: 64px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--mid);
-      border: 1px solid var(--border2);
-      border-radius: 2px;
-      padding: 9px 18px;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      z-index: 3000;
-      opacity: 0;
-      transition: opacity 0.25s;
-      pointer-events: none;
-      white-space: nowrap;
-      color: var(--text);
-    }
+    #toast { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); background: var(--mid); border: 1px solid var(--border2); border-radius: 2px; padding: 9px 18px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; z-index: 3000; opacity: 0; transition: opacity 0.25s; pointer-events: none; white-space: nowrap; color: var(--text); }
     #toast.show { opacity: 1; }
 
-    /* Leaflet overrides */
-    .leaflet-control-zoom a {
-      background: rgba(10,10,10,0.9) !important;
-      color: var(--text) !important;
-      border-color: var(--border) !important;
-      font-size: 16px !important;
-    }
+    .leaflet-control-zoom a { background: rgba(10,10,10,0.9) !important; color: var(--text) !important; border-color: var(--border) !important; font-size: 16px !important; }
     .leaflet-control-zoom a:hover { background: var(--mid) !important; }
   </style>
 </head>
@@ -520,13 +261,15 @@ font-style: normal;
 <!-- ═══ REGISTRATION ═══ -->
 <div id="reg-screen">
   <div class="brand-header">
-    <div class="musette-wordmark"><img src="icons/musette_mlogo-white.svg"></div>
-    <div class="event-title">Skåne Grus</div>
+    <div class="musette-wordmark" style="margin-bottom:20px">
+      <img src="icons/musette_mlogo-white.svg" alt="Musette">
+    </div>
+    <div class="event-title"><em>Skåne</em></div>
+    <div class="event-title" style="font-style:normal">Grus</div>
+    <div class="event-year">2026</div>
     <div class="event-meta">
-      <span>27 Juni</span>
-      <span class="dot">·</span>
-      <span>300 km</span>
-      <span class="dot">·</span>
+      <span>27 Juni</span><span class="dot">·</span>
+      <span>300 km</span><span class="dot">·</span>
       <span>2000 hm</span>
     </div>
   </div>
@@ -538,7 +281,6 @@ font-style: normal;
       <label>Ditt namn</label>
       <input type="text" id="name-input" placeholder="Förnamn Efternamn" maxlength="40" autocomplete="name">
     </div>
-
     <div class="field">
       <label>Profilbild</label>
       <div class="photo-row">
@@ -555,14 +297,10 @@ font-style: normal;
       </div>
       <input type="file" id="photo-input" accept="image/*">
     </div>
-
-    <button class="btn-start" id="join-btn" onclick="handleJoin()">
-      Aktivera GPS-tracker
-    </button>
-
+    <button class="btn-start" id="join-btn" onclick="handleJoin()">Gå med i loppet</button>
     <p class="legal">
       Deltagande sker på egen risk.<br>
-      Din position delas live med övriga deltagare.
+      Din progress delas live med övriga deltagare.
     </p>
   </div>
 </div>
@@ -572,12 +310,9 @@ font-style: normal;
   <div id="top-bar">
     <div class="bar-left">
       <div class="my-avatar" id="my-avatar"></div>
-      <div class="bar-info">
+      <div>
         <div class="bar-name" id="bar-name">–</div>
-        <div class="gps-pill searching" id="gps-pill">
-          <span class="dot"></span>
-          <span id="gps-label">Söker GPS…</span>
-        </div>
+        <div class="bar-sub" id="bar-sub">0 av 0 checkpoints</div>
       </div>
     </div>
     <button class="btn-dnf" onclick="showDNF()">Avbryt</button>
@@ -585,15 +320,13 @@ font-style: normal;
 
   <div id="map"></div>
 
-  <div id="status-strip">
-    <div class="strip-item">
-      <div class="strip-val" id="count-val">–</div>
-      <div class="strip-label">Cyklister</div>
+  <div id="cp-panel">
+    <div class="cp-panel-header">
+      <span class="cp-panel-title">Checkpoints</span>
+      <span class="cp-panel-progress" id="cp-progress">0 / 0</span>
     </div>
-    <div class="strip-sep"></div>
-    <div class="strip-item">
-      <div class="strip-val" id="event-label">Skåne Grus</div>
-      <div class="strip-label">27 Juni 2026</div>
+    <div class="cp-list" id="cp-list">
+      <div class="cp-empty">Inga checkpoints har lagts till ännu.</div>
     </div>
   </div>
 </div>
@@ -614,31 +347,31 @@ font-style: normal;
 <div id="toast"></div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────
 const SERVER_URL = window.location.origin;
 const WS_URL = SERVER_URL.replace(/^http/, 'ws');
 
-// ─── STATE ────────────────────────────────────────
+// ── State ──────────────────────────────────────────────────────────────────
 let myId = null, myName = '', myPhoto = null, photoUrl = null;
-let ws = null, map = null, myMarker = null;
-let markers = {}, watchId = null, isDNF = false;
+let ws = null, map = null, isDNF = false;
+let checkpoints = [];
+let myCheckIns = [];
+let participants = {};
+let cpMarkers = {};
 
-// ─── REGISTRATION ─────────────────────────────────
-document.getElementById('photo-input').addEventListener('change', async (e) => {
+// ── Registration ───────────────────────────────────────────────────────────
+document.getElementById('photo-input').addEventListener('change', async e => {
   const file = e.target.files[0];
   if (!file) return;
+  new FileReader().onload = ev =>
+    (document.getElementById('photo-circle').innerHTML = `<img src="${ev.target.result}" alt="">`);
   const reader = new FileReader();
-  reader.onload = (ev) => {
-    const c = document.getElementById('photo-circle');
-    c.innerHTML = `<img src="${ev.target.result}" alt="">`;
-  };
+  reader.onload = ev => (document.getElementById('photo-circle').innerHTML = `<img src="${ev.target.result}" alt="">`);
   reader.readAsDataURL(file);
-  const fd = new FormData();
-  fd.append('photo', file);
   try {
+    const fd = new FormData();
+    fd.append('photo', file);
     const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    const data = await res.json();
-    photoUrl = data.url;
+    photoUrl = (await res.json()).url;
   } catch { showToast('Kunde inte ladda upp bilden'); }
 });
 
@@ -648,193 +381,244 @@ async function handleJoin() {
   myId = crypto.randomUUID();
   myName = name;
   myPhoto = photoUrl || null;
-  document.getElementById('join-btn').disabled = true;
-  document.getElementById('join-btn').textContent = 'Ansluter…';
-  showMapScreen();
-}
+  const btn = document.getElementById('join-btn');
+  btn.disabled = true;
+  btn.textContent = 'Ansluter…';
 
-// ─── MAP SCREEN ───────────────────────────────────
-function showMapScreen() {
-  document.getElementById('reg-screen').style.display = 'none';
-  const ms = document.getElementById('map-screen');
-  ms.style.display = 'flex';
-
-  document.getElementById('bar-name').textContent = myName;
-  const av = document.getElementById('my-avatar');
-  if (myPhoto) {
-    av.innerHTML = `<img src="${myPhoto}" alt="">`;
-  } else {
-    av.innerHTML = `<span style="font-family:var(--font-display);font-size:14px;font-weight:600;color:#f5f2ed">${initials(myName)}</span>`;
+  try {
+    const data = await fetch('/api/race').then(r => r.json());
+    checkpoints = data.checkpoints || [];
+    showMapScreen(data.routeCoords || []);
+  } catch {
+    checkpoints = [];
+    showMapScreen([]);
   }
-  initMap();
-  connectWS();
-  startGPS();
 }
 
-// ─── MAP ──────────────────────────────────────────
-function initMap() {
-  map = L.map('map', { zoomControl: false, attributionControl: false });
+// ── Map screen ─────────────────────────────────────────────────────────────
+function showMapScreen(routeCoords) {
+  document.getElementById('reg-screen').style.display = 'none';
+  document.getElementById('map-screen').style.display = 'flex';
+  document.getElementById('bar-name').textContent = myName;
 
-  // Dark map tiles
+  const av = document.getElementById('my-avatar');
+  av.innerHTML = myPhoto
+    ? `<img src="${myPhoto}" alt="">`
+    : `<span style="font-family:degular-display,sans-serif;font-size:13px;font-weight:700;color:#f5f2ed">${initials(myName)}</span>`;
+
+  initMap(routeCoords);
+  renderCheckpoints();
+  connectWS();
+}
+
+// ── Map ────────────────────────────────────────────────────────────────────
+function initMap(routeCoords) {
+  map = L.map('map', { zoomControl: false, attributionControl: false });
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19, subdomains: 'abcd'
   }).addTo(map);
-
   L.control.zoom({ position: 'topright' }).addTo(map);
 
-  // Draw route
-  if (typeof ROUTE_COORDS !== 'undefined' && ROUTE_COORDS && ROUTE_COORDS.length > 0) {
-    const route = L.polyline(ROUTE_COORDS, {
-      color: '#c8a96e',
-      weight: 2.5,
-      opacity: 0.75
-    }).addTo(map);
+  if (routeCoords.length) {
+    const route = L.polyline(routeCoords, { color: '#E9BD4A', weight: 2.5, opacity: 0.65 }).addTo(map);
     map.fitBounds(route.getBounds(), { padding: [44, 44] });
-
-    // Start marker
-    const mkStart = L.divIcon({
-      html: '<div style="background:#0a0a0a;color:#c8a96e;font-size:9px;font-weight:700;letter-spacing:0.18em;padding:4px 8px;border:1px solid #c8a96e;white-space:nowrap;font-family:degular,sans-serif">START</div>',
-      className: '', iconAnchor: [0, 14]
-    });
-    const mkMal = L.divIcon({
-      html: '<div style="background:#0a0a0a;color:#c8a96e;font-size:9px;font-weight:700;letter-spacing:0.18em;padding:4px 8px;border:1px solid #c8a96e;white-space:nowrap;font-family:degular,sans-serif">MÅL</div>',
-      className: '', iconAnchor: [0, 14]
-    });
-    L.marker(ROUTE_COORDS[0], { icon: mkStart }).addTo(map);
-    L.marker(ROUTE_COORDS[ROUTE_COORDS.length - 1], { icon: mkMal }).addTo(map);
   } else {
-    map.setView([55.605, 13.003], 10);
+    map.setView([55.605, 13.003], 9);
+  }
+  placeCheckpointMarkers();
+}
+
+function placeCheckpointMarkers() {
+  Object.values(cpMarkers).forEach(m => m.remove());
+  cpMarkers = {};
+  checkpoints.forEach((cp, i) => {
+    const reached = myCheckIns.some(c => c.checkpointId === cp.id);
+    const icon = L.divIcon({
+      html: `<div class="cp-marker${reached ? ' reached' : ''}">${i + 1}</div>`,
+      className: '', iconSize: [32, 32], iconAnchor: [16, 16]
+    });
+    cpMarkers[cp.id] = L.marker([cp.lat, cp.lng], { icon })
+      .bindTooltip(cp.name, { permanent: false, direction: 'top', offset: [0, -20], className: 'rider-tip' })
+      .addTo(map);
+  });
+}
+
+// ── Checkpoint list ────────────────────────────────────────────────────────
+function renderCheckpoints() {
+  const list = document.getElementById('cp-list');
+  const done = myCheckIns.length;
+  const total = checkpoints.length;
+
+  document.getElementById('cp-progress').textContent = `${done} / ${total}`;
+  document.getElementById('bar-sub').textContent = `${done} av ${total} checkpoints`;
+
+  if (!checkpoints.length) {
+    list.innerHTML = '<div class="cp-empty">Inga checkpoints har lagts till ännu.</div>';
+    return;
+  }
+
+  list.innerHTML = checkpoints.map((cp, i) => {
+    const checkIn = myCheckIns.find(c => c.checkpointId === cp.id);
+    const isDone = !!checkIn;
+    const action = isDone
+      ? `<div class="cp-done-icon">✓</div>`
+      : isDNF ? ''
+      : `<button class="btn-checkin" onclick="doCheckIn(${cp.id})" id="btn-cp-${cp.id}">Checka in</button>`;
+    return `
+      <div class="cp-row ${isDone ? 'done' : ''}">
+        <div class="cp-num">${i + 1}</div>
+        <div class="cp-info">
+          <div class="cp-name">${cp.name}</div>
+          <div class="cp-meta ${isDone ? 'done-time' : ''}">
+            ${isDone ? formatTime(checkIn.time) : `Inom ${cp.radius || 500} m`}
+          </div>
+        </div>
+        <div class="cp-action">${action}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Check-in ───────────────────────────────────────────────────────────────
+async function doCheckIn(cpId) {
+  const btn = document.getElementById(`btn-cp-${cpId}`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Hämtar…'; }
+
+  let lat = null, lng = null;
+  try {
+    const pos = await new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 })
+    );
+    lat = pos.coords.latitude;
+    lng = pos.coords.longitude;
+  } catch { /* no GPS — send anyway (honor system) */ }
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'checkin', checkpointId: cpId, lat, lng }));
   }
 }
 
-// ─── WEBSOCKET ────────────────────────────────────
+// ── WebSocket ──────────────────────────────────────────────────────────────
 function connectWS() {
   ws = new WebSocket(WS_URL);
-  ws.onopen = () => {
+
+  ws.onopen = () =>
     ws.send(JSON.stringify({ type: 'join', id: myId, name: myName, photo: myPhoto }));
-  };
-  ws.onmessage = (e) => {
+
+  ws.onmessage = e => {
     const msg = JSON.parse(e.data);
     switch (msg.type) {
       case 'init':
-        msg.participants.forEach(p => { if (p.id !== myId) upsertMarker(p); });
-        updateCount();
+        if (msg.checkpoints) { checkpoints = msg.checkpoints; placeCheckpointMarkers(); renderCheckpoints(); }
+        msg.participants.forEach(p => { if (p.id !== myId) upsertParticipant(p); });
         break;
+
       case 'joined':
         if (msg.participant.id !== myId) {
-          upsertMarker(msg.participant);
+          upsertParticipant(msg.participant);
           showToast(`${msg.participant.name} anslöt`);
-          updateCount();
         }
         break;
-      case 'position':
-        if (msg.id !== myId) moveMarker(msg.id, msg.lat, msg.lng);
+
+      case 'checkin':
+        if (msg.participantId === myId) {
+          myCheckIns.push({ checkpointId: msg.checkpointId, time: msg.time });
+          placeCheckpointMarkers();
+          renderCheckpoints();
+          const cp = checkpoints.find(c => c.id === msg.checkpointId);
+          showToast(`✓ Incheckad: ${cp ? cp.name : 'Checkpoint'}`);
+        } else {
+          const p = participants[msg.participantId];
+          if (p) {
+            if (!p.checkIns) p.checkIns = [];
+            p.checkIns.push({ checkpointId: msg.checkpointId, time: msg.time });
+            moveToCheckpoint(msg.participantId, msg.checkpointId);
+          }
+        }
         break;
+
+      case 'checkin_error':
+        showToast(msg.message);
+        document.querySelectorAll('.btn-checkin').forEach(b => { b.disabled = false; b.textContent = 'Checka in'; });
+        break;
+
       case 'dnf':
-        setDNFMarker(msg.id);
-        updateCount();
+        setDNFParticipant(msg.id);
+        break;
+
+      case 'race_update':
+        if (msg.checkpoints) { checkpoints = msg.checkpoints; placeCheckpointMarkers(); renderCheckpoints(); }
+        if (msg.routeCoords && map) {
+          map.eachLayer(l => { if (l instanceof L.Polyline) l.remove(); });
+          const route = L.polyline(msg.routeCoords, { color: '#E9BD4A', weight: 2.5, opacity: 0.65 }).addTo(map);
+          map.fitBounds(route.getBounds(), { padding: [44, 44] });
+        }
+        break;
+
+      case 'reset':
+        Object.values(participants).forEach(p => { if (p.marker) p.marker.remove(); });
+        participants = {};
         break;
     }
   };
+
   ws.onclose = () => setTimeout(connectWS, 3000);
-  ws.onerror = () => ws.close();
+  ws.onerror  = () => ws.close();
 }
 
-// ─── GPS ──────────────────────────────────────────
-function startGPS() {
-  if (!navigator.geolocation) { showToast('GPS stöds ej i denna webbläsare'); return; }
-  navigator.geolocation.getCurrentPosition(onPos, onGPSErr, { enableHighAccuracy: true, timeout: 15000 });
-  watchId = navigator.geolocation.watchPosition(onPos, onGPSErr, {
-    enableHighAccuracy: true, timeout: 30000, maximumAge: 25000
-  });
+// ── Participants ───────────────────────────────────────────────────────────
+function upsertParticipant(p) {
+  if (participants[p.id]) return;
+  participants[p.id] = { ...p, marker: null };
+  if (p.checkIns && p.checkIns.length) {
+    moveToCheckpoint(p.id, p.checkIns[p.checkIns.length - 1].checkpointId);
+  }
 }
 
-function onPos(pos) {
-  const { latitude: lat, longitude: lng } = pos.coords;
-  const pill = document.getElementById('gps-pill');
-  const lbl = document.getElementById('gps-label');
-  pill.className = 'gps-pill active';
-  lbl.textContent = 'GPS aktiv';
+function moveToCheckpoint(pid, cpId) {
+  const cp = checkpoints.find(c => c.id === cpId);
+  if (!cp || !map) return;
+  const p = participants[pid];
+  if (!p) return;
 
-  if (!myMarker) {
-    myMarker = makeMarker(myName, myPhoto, true);
-    myMarker.setLatLng([lat, lng]).addTo(map);
-    map.setView([lat, lng], 13);
+  const offset = 0.0008;
+  const lat = cp.lat + (Math.random() - 0.5) * offset;
+  const lng = cp.lng + (Math.random() - 0.5) * offset;
+
+  if (p.marker) {
+    p.marker.setLatLng([lat, lng]);
   } else {
-    myMarker.setLatLng([lat, lng]);
+    const icon = L.divIcon({
+      html: `<div class="rider-dot">${p.photo ? `<img src="${p.photo}" alt="">` : `<span class="init">${initials(p.name)}</span>`}</div>`,
+      className: '', iconSize: [32, 32], iconAnchor: [16, 16]
+    });
+    p.marker = L.marker([lat, lng], { icon })
+      .bindTooltip(p.name, { permanent: false, direction: 'top', offset: [0, -20], className: 'rider-tip' })
+      .addTo(map);
   }
-
-  if (ws && ws.readyState === WebSocket.OPEN && !isDNF) {
-    ws.send(JSON.stringify({ type: 'position', lat, lng }));
-  }
 }
 
-function onGPSErr() {
-  const pill = document.getElementById('gps-pill');
-  const lbl = document.getElementById('gps-label');
-  pill.className = 'gps-pill searching';
-  lbl.textContent = 'Söker GPS…';
+function setDNFParticipant(id) {
+  const p = participants[id];
+  if (!p) return;
+  p.status = 'dnf';
+  if (p.marker) p.marker.getElement()?.querySelector('.rider-dot')?.classList.add('dnf');
 }
 
-// ─── MARKERS ──────────────────────────────────────
-function makeMarker(name, photo, isMe = false) {
-  const inner = photo
-    ? `<img src="${photo}" alt="">`
-    : `<span class="init">${initials(name)}</span>`;
-  const html = `<div class="rider-dot${isMe ? ' is-me' : ''}">${inner}</div>`;
-  const icon = L.divIcon({ html, className: '', iconSize: [38, 38], iconAnchor: [19, 19] });
-  const m = L.marker([0, 0], { icon });
-  m.bindTooltip(name + (isMe ? ' ★' : ''), {
-    permanent: false, direction: 'top', offset: [0, -22], className: 'rider-tip'
-  });
-  return m;
-}
-
-function upsertMarker(p) {
-  if (markers[p.id] || !p.lat) return;
-  const m = makeMarker(p.name, p.photo);
-  m.setLatLng([p.lat, p.lng]).addTo(map);
-  markers[p.id] = m;
-}
-
-function moveMarker(id, lat, lng) {
-  if (markers[id]) markers[id].setLatLng([lat, lng]);
-}
-
-function setDNFMarker(id) {
-  if (!markers[id]) return;
-  const el = markers[id].getElement();
-  if (el) el.querySelector('.rider-dot').classList.add('dnf');
-}
-
-// ─── DNF ──────────────────────────────────────────
+// ── DNF ────────────────────────────────────────────────────────────────────
 function showDNF() { document.getElementById('dnf-modal').classList.add('open'); }
 function closeDNF() { document.getElementById('dnf-modal').classList.remove('open'); }
 function confirmDNF() {
   isDNF = true;
   closeDNF();
   if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'dnf' }));
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-  if (myMarker) {
-    const el = myMarker.getElement();
-    if (el) el.querySelector('.rider-dot').classList.add('dnf');
-  }
-  const pill = document.getElementById('gps-pill');
-  const lbl = document.getElementById('gps-label');
-  pill.className = 'gps-pill';
-  pill.style.color = '#9e5a5a';
-  lbl.textContent = 'DNF';
   document.querySelector('.btn-dnf').style.display = 'none';
+  renderCheckpoints();
   showToast('Du är markerad som DNF');
 }
 
-// ─── HELPERS ──────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 function initials(n) { return n.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(); }
-
-function updateCount() {
-  const n = Object.keys(markers).length + (myMarker ? 1 : 0);
-  document.getElementById('count-val').textContent = n;
-}
+function formatTime(ts) { return new Date(ts).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }); }
 
 let toastTimer;
 function showToast(msg) {
@@ -842,7 +626,7 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
 history.pushState(null, '', window.location.href);

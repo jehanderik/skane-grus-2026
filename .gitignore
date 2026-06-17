@@ -1,4 +1,6 @@
 node_modules/
-uploads/
+public/uploads/
 *.env
 route-coords.js
+make-icons.js
+server/data/
