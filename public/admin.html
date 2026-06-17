@@ -368,8 +368,16 @@ async function showAdmin() {
   pollParticipants();
 }
 
-function api(path, opts = {}) {
-  return fetch(path, { ...opts, headers: { ...(opts.headers || {}), 'Authorization': `Bearer ${token}` } });
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { ...(opts.headers || {}), 'Authorization': `Bearer ${token}` }
+  });
+  if (res.status === 401) {
+    doLogout();
+    throw new Error('Session utgången — logga in igen');
+  }
+  return res;
 }
 
 async function loadRace() {
@@ -531,7 +539,7 @@ async function uploadGPX(input) {
     } else {
       showToast(data.error || 'Fel vid uppladdning');
     }
-  } catch { showToast('Serverfel'); }
+  } catch (e) { showToast(e.message || 'Serverfel'); }
   input.value = '';
 }
 
