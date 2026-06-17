@@ -209,6 +209,13 @@
     .cp-done-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 16px; }
     .cp-empty { padding: 24px 16px; font-size: 12px; color: var(--muted); text-align: center; letter-spacing: 0.05em; }
 
+    .cp-checkins { padding: 0 16px 10px 56px; display: flex; flex-direction: column; gap: 3px; }
+    .cp-checkin-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted2); }
+    .cp-checkin-row.is-me { color: var(--accent); }
+    .cp-ci-rank { width: 14px; font-size: 9px; color: var(--muted); flex-shrink: 0; }
+    .cp-ci-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cp-ci-time { font-size: 10px; letter-spacing: 0.04em; flex-shrink: 0; }
+
     /* Rider markers */
     .rider-dot {
       width: 32px; height: 32px; border-radius: 50%;
@@ -458,23 +465,47 @@ function renderCheckpoints() {
   }
 
   list.innerHTML = checkpoints.map((cp, i) => {
-    const checkIn = myCheckIns.find(c => c.checkpointId === cp.id);
-    const isDone = !!checkIn;
+    const myCheckIn = myCheckIns.find(c => c.checkpointId === cp.id);
+    const isDone = !!myCheckIn;
+
+    // Gather all check-ins for this checkpoint across all participants
+    const allEntries = [
+      ...(myCheckIn ? [{ name: 'Du', time: myCheckIn.time, isMe: true }] : []),
+      ...Object.values(participants)
+        .filter(p => p.status !== 'dnf')
+        .flatMap(p => {
+          const ci = p.checkIns?.find(c => c.checkpointId === cp.id);
+          return ci ? [{ name: p.name, time: ci.time, isMe: false }] : [];
+        })
+    ].sort((a, b) => a.time - b.time);
+
     const action = isDone
       ? `<div class="cp-done-icon">✓</div>`
       : isDNF ? ''
       : `<button class="btn-checkin" onclick="doCheckIn(${cp.id})" id="btn-cp-${cp.id}">Checka in</button>`;
+
+    const leaderboard = allEntries.length ? `
+      <div class="cp-checkins">
+        ${allEntries.map((e, rank) => `
+          <div class="cp-checkin-row${e.isMe ? ' is-me' : ''}">
+            <span class="cp-ci-rank">${rank + 1}</span>
+            <span class="cp-ci-name">${e.name}</span>
+            <span class="cp-ci-time">${formatTime(e.time)}</span>
+          </div>`).join('')}
+      </div>` : '';
+
     return `
       <div class="cp-row ${isDone ? 'done' : ''}">
         <div class="cp-num">${i + 1}</div>
         <div class="cp-info">
           <div class="cp-name">${cp.name}</div>
           <div class="cp-meta ${isDone ? 'done-time' : ''}">
-            ${isDone ? formatTime(checkIn.time) : `Inom ${cp.radius || 500} m`}
+            ${isDone ? formatTime(myCheckIn.time) : `Inom ${cp.radius || 500} m`}
           </div>
         </div>
         <div class="cp-action">${action}</div>
-      </div>`;
+      </div>
+      ${leaderboard}`;
   }).join('');
 }
 
