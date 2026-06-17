@@ -194,7 +194,7 @@
     .btn-reset:hover { background: #3a2020; }
 
     /* Map */
-    #admin-map { flex: 1; cursor: crosshair; }
+    #admin-map { position: absolute; inset: 0; cursor: crosshair; }
     #admin-map.normal { cursor: default; }
 
     .map-hint {
@@ -362,6 +362,7 @@ async function showAdmin() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-screen').style.display = 'flex';
   initMap();
+  setTimeout(() => map.invalidateSize(), 50);
   await loadRace();
   pollTimer = setInterval(pollParticipants, 5000);
   pollParticipants();
