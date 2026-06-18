@@ -442,7 +442,7 @@ function addCheckpointAt(lat, lng) {
   checkpoints.push({ id, name, lat, lng, radius: 500 });
   rebuildMarkers();
   renderCPList();
-  // Focus the name input for the new checkpoint
+  saveCheckpoints();
   setTimeout(() => {
     const input = document.querySelector(`[data-cp-id="${id}"] .cp-edit-name`);
     if (input) { input.focus(); input.select(); }
@@ -473,7 +473,8 @@ function renderCPList() {
     <div class="cp-edit-row" data-cp-id="${cp.id}">
       <div class="cp-edit-num">${i + 1}</div>
       <input class="cp-edit-name" type="text" value="${cp.name}" placeholder="Namn"
-        oninput="updateCPName(${cp.id}, this.value)">
+        oninput="updateCPName(${cp.id}, this.value)"
+        onblur="saveCheckpoints()">
       <div class="cp-edit-coords">${cp.lat.toFixed(4)}, ${cp.lng.toFixed(4)}</div>
       <div class="cp-edit-actions">
         ${i > 0 ? `<button class="btn-cp-up" onclick="moveCP(${i}, -1)" title="Flytta upp">↑</button>` : '<span style="width:20px"></span>'}
@@ -497,12 +498,14 @@ function moveCP(index, dir) {
   [checkpoints[index], checkpoints[newIndex]] = [checkpoints[newIndex], checkpoints[index]];
   rebuildMarkers();
   renderCPList();
+  saveCheckpoints();
 }
 
 function deleteCP(id) {
   checkpoints = checkpoints.filter(c => c.id !== id);
   rebuildMarkers();
   renderCPList();
+  saveCheckpoints();
 }
 
 // ── Save checkpoints ───────────────────────────────────────────────────────
