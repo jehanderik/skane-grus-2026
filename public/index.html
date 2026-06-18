@@ -172,6 +172,65 @@
     }
     .cp-panel-title { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted2); }
     .cp-panel-progress { font-size: 11px; color: var(--accent); letter-spacing: 0.05em; }
+    .btn-leaderboard {
+      background: none; border: none; color: var(--muted2); cursor: pointer; padding: 0;
+      font-size: 9px; font-family: degular-display, sans-serif; font-weight: 700; font-style: normal;
+      letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.15s;
+    }
+    .btn-leaderboard:hover { color: var(--accent); }
+
+    /* ── LEADERBOARD MODAL ──────────────────────────── */
+    #lb-modal {
+      display: none; position: fixed; inset: 0; z-index: 1500;
+      flex-direction: column;
+    }
+    #lb-modal.open { display: flex; }
+    .lb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+    .lb-sheet {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 88vh; background: var(--dark);
+      border-top: 1px solid var(--border2); border-radius: 12px 12px 0 0;
+      display: flex; flex-direction: column;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .lb-sheet-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .lb-sheet-title { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted2); }
+    .btn-lb-close {
+      background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 18px;
+      line-height: 1; padding: 0 4px; transition: color 0.15s;
+    }
+    .btn-lb-close:hover { color: var(--text); }
+    .lb-sheet-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+    .lb-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row.dnf { opacity: 0.45; }
+    .lb-rank { width: 22px; flex-shrink: 0; font-size: 12px; color: var(--muted2); text-align: center; }
+    .lb-rank.top { color: var(--accent); }
+    .lb-av {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      background: var(--mid); border: 1.5px solid var(--border2);
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .lb-av img { width: 100%; height: 100%; object-fit: cover; }
+    .lb-av .init { font-size: 10px; color: var(--muted2); }
+    .lb-info { flex: 1; min-width: 0; }
+    .lb-name { font-size: 13px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-sub { font-size: 10px; color: var(--muted2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-sub .t { color: var(--accent); margin-left: 4px; }
+    .lb-dots { display: flex; gap: 3px; flex-shrink: 0; }
+    .lb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); }
+    .lb-dot.done { background: var(--accent); }
+    .lb-dnf-tag { font-size: 8px; letter-spacing: 0.12em; color: #9e5a5a; margin-left: 4px; }
+    .lb-section { padding: 10px 16px 4px; font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
+    .lb-empty-msg { padding: 32px 16px; text-align: center; font-size: 12px; color: var(--muted); }
 
     .cp-list { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
@@ -332,10 +391,27 @@
   <div id="cp-panel">
     <div class="cp-panel-header">
       <span class="cp-panel-title">Checkpoints</span>
-      <span class="cp-panel-progress" id="cp-progress">0 / 0</span>
+      <div style="display:flex;align-items:center;gap:14px">
+        <button class="btn-leaderboard" onclick="openLeaderboard()">Leaderboard ↑</button>
+        <span class="cp-panel-progress" id="cp-progress">0 / 0</span>
+      </div>
     </div>
     <div class="cp-list" id="cp-list">
       <div class="cp-empty">Inga checkpoints har lagts till ännu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Leaderboard Modal -->
+<div id="lb-modal">
+  <div class="lb-backdrop" onclick="closeLeaderboard()"></div>
+  <div class="lb-sheet">
+    <div class="lb-sheet-header">
+      <span class="lb-sheet-title">Leaderboard</span>
+      <button class="btn-lb-close" onclick="closeLeaderboard()">✕</button>
+    </div>
+    <div class="lb-sheet-body" id="lb-body">
+      <div class="lb-empty-msg">Laddar…</div>
     </div>
   </div>
 </div>
@@ -678,6 +754,77 @@ function showToast(msg) {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Leaderboard modal ──────────────────────────────────────────────────────
+let lbRefreshTimer = null;
+
+function openLeaderboard() {
+  document.getElementById('lb-modal').classList.add('open');
+  fetchLeaderboard();
+  lbRefreshTimer = setInterval(fetchLeaderboard, 10000);
+}
+
+function closeLeaderboard() {
+  document.getElementById('lb-modal').classList.remove('open');
+  clearInterval(lbRefreshTimer);
+}
+
+async function fetchLeaderboard() {
+  try {
+    const data = await fetch('/api/leaderboard').then(r => r.json());
+    renderLeaderboard(data);
+  } catch {
+    document.getElementById('lb-body').innerHTML = '<div class="lb-empty-msg">Kunde inte hämta data</div>';
+  }
+}
+
+function renderLeaderboard({ checkpoints, participants }) {
+  const body = document.getElementById('lb-body');
+  if (!participants.length) {
+    body.innerHTML = '<div class="lb-empty-msg">Inga deltagare ännu</div>';
+    return;
+  }
+
+  const active = rankLB(participants.filter(p => p.status !== 'dnf'), checkpoints);
+  const dnf    = rankLB(participants.filter(p => p.status === 'dnf'), checkpoints);
+
+  let html = active.map((p, i) => lbRowHTML(p, i + 1, checkpoints)).join('');
+  if (dnf.length) {
+    html += `<div class="lb-section">DNF</div>` +
+      dnf.map(p => lbRowHTML(p, null, checkpoints, true)).join('');
+  }
+  body.innerHTML = html || '<div class="lb-empty-msg">Inga incheckningar ännu</div>';
+}
+
+function rankLB(ps, checkpoints) {
+  return [...ps].sort((a, b) => {
+    const ad = a.checkIns?.length || 0, bd = b.checkIns?.length || 0;
+    if (bd !== ad) return bd - ad;
+    const at = a.checkIns?.length ? a.checkIns[a.checkIns.length - 1].time : Infinity;
+    const bt = b.checkIns?.length ? b.checkIns[b.checkIns.length - 1].time : Infinity;
+    return at - bt;
+  });
+}
+
+function lbRowHTML(p, rank, checkpoints, isDNF = false) {
+  const lastCI = p.checkIns?.length ? p.checkIns[p.checkIns.length - 1] : null;
+  const lastCP = lastCI ? checkpoints.find(c => c.id === lastCI.checkpointId) : null;
+  const avatar = p.photo ? `<img src="${p.photo}" alt="">` : `<span class="init">${initials(p.name)}</span>`;
+  const rankEl = rank ? `<div class="lb-rank ${rank <= 3 ? 'top' : ''}">${rank}</div>` : `<div class="lb-rank">–</div>`;
+  const dots = checkpoints.map(cp => `<div class="lb-dot${p.checkIns?.some(c => c.checkpointId === cp.id) ? ' done' : ''}"></div>`).join('');
+  const sub = lastCP ? `${lastCP.name}<span class="t">${formatTime(lastCI.time)}</span>` : 'Ingen incheckning';
+  const dnfTag = isDNF ? '<span class="lb-dnf-tag">DNF</span>' : '';
+  return `
+    <div class="lb-row${isDNF ? ' dnf' : ''}">
+      ${rankEl}
+      <div class="lb-av">${avatar}</div>
+      <div class="lb-info">
+        <div class="lb-name">${p.name}${dnfTag}</div>
+        <div class="lb-sub">${sub}</div>
+      </div>
+      <div class="lb-dots">${dots}</div>
+    </div>`;
 }
 
 function switchParticipant() {
