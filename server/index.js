@@ -146,6 +146,16 @@ wss.on('connection', ws => {
     try { msg = JSON.parse(raw); } catch { return; }
 
     switch (msg.type) {
+      case 'watch': {
+        // Read-only observer (leaderboard page) — receives all broadcasts
+        ws.send(JSON.stringify({
+          type: 'init',
+          participants: [...participants.values()],
+          checkpoints: race.checkpoints
+        }));
+        break;
+      }
+
       case 'join': {
         const p = {
           id: msg.id, name: msg.name, photo: msg.photo || null,

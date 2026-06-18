@@ -181,7 +181,7 @@
   <div id="board"></div>
 </main>
 
-<footer>Uppdateras automatiskt var 10:e sekund</footer>
+<footer>Uppdateras i realtid</footer>
 
 <script>
 let lastData = null;
@@ -294,6 +294,27 @@ function formatTime(ts) { return new Date(ts).toLocaleTimeString('sv-SE', { hour
 
 load();
 setInterval(load, 10000);
+
+// WebSocket for instant updates (reset, checkins)
+(function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}`);
+
+  ws.onopen = () => ws.send(JSON.stringify({ type: 'watch' }));
+
+  ws.onmessage = e => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'reset') {
+      // Clear immediately, don't wait for next poll
+      render({ checkpoints: [], participants: [] });
+      document.getElementById('event-stats').textContent = '';
+    } else if (msg.type === 'checkin' || msg.type === 'joined' || msg.type === 'dnf') {
+      load();
+    }
+  };
+
+  ws.onclose = () => setTimeout(connectWS, 3000);
+})();
 </script>
 </body>
 </html>

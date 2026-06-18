@@ -640,6 +640,7 @@ function connectWS() {
           upsertParticipant(msg.participant);
           showToast(`${msg.participant.name} anslöt`);
         }
+        if (document.getElementById('lb-modal').classList.contains('open')) fetchLeaderboard();
         break;
 
       case 'checkin':
@@ -658,6 +659,7 @@ function connectWS() {
             moveToCheckpoint(msg.participantId, msg.checkpointId);
           }
         }
+        if (document.getElementById('lb-modal').classList.contains('open')) fetchLeaderboard();
         break;
 
       case 'checkin_error':
@@ -667,6 +669,7 @@ function connectWS() {
 
       case 'dnf':
         setDNFParticipant(msg.id);
+        if (document.getElementById('lb-modal').classList.contains('open')) fetchLeaderboard();
         break;
 
       case 'race_update':
