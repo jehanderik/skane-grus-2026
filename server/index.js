@@ -95,6 +95,17 @@ app.post('/api/admin/reset', adminOnly, (req, res) => {
 app.get('/api/race', (req, res) =>
   res.json({ checkpoints: race.checkpoints, routeCoords: race.routeCoords }));
 
+app.get('/api/leaderboard', (req, res) => {
+  const ps = [...participants.values()].map(p => ({
+    id: p.id, name: p.name, photo: p.photo,
+    checkIns: p.checkIns, status: p.status
+  }));
+  res.json({ checkpoints: race.checkpoints, participants: ps });
+});
+
+app.get('/leaderboard', (req, res) =>
+  res.sendFile(path.join(__dirname, '../public/leaderboard.html')));
+
 app.post('/api/upload', photoUpload.single('photo'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Ingen fil' });
   res.json({ url: `/uploads/${req.file.filename}` });

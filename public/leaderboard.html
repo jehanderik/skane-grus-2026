@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Leaderboard – Skåne Grus 2026</title>
+  <link rel="stylesheet" href="https://use.typekit.net/jcw2zfd.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0a0a0a;
+      --dark:    #111111;
+      --mid:     #1a1a1a;
+      --border:  #252525;
+      --border2: #333;
+      --text:    #f5f2ed;
+      --muted:   #666;
+      --muted2:  #888;
+      --accent:  #E9BD4A;
+      --white:   #ffffff;
+    }
+
+    html, body {
+      min-height: 100%; background: var(--black); color: var(--text);
+      font-family: degular-display, sans-serif; font-weight: 700; font-style: normal;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ──────────────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(10,10,10,0.97); border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-logo img { height: 22px; opacity: 0.85; }
+
+    .header-title {
+      font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted2);
+    }
+
+    .live-pill {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5a9e6f;
+    }
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #5a9e6f;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+    }
+    .live-pill.stale { color: var(--muted2); }
+    .live-pill.stale .live-dot { background: var(--muted2); animation: none; }
+
+    /* ── MAIN ────────────────────────────────────────── */
+    main { max-width: 680px; margin: 0 auto; padding: 0 0 40px; }
+
+    /* ── EVENT INFO ──────────────────────────────────── */
+    .event-bar {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    }
+    .event-name {
+      font-size: clamp(22px, 5vw, 30px); letter-spacing: -0.01em; color: var(--white);
+    }
+    .event-name em { font-style: italic; color: var(--accent); }
+    .event-stats {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted2); white-space: nowrap;
+    }
+    .event-stats span { color: var(--accent); }
+
+    /* ── CHECKPOINT HEADER ───────────────────────────── */
+    .cp-header-row {
+      display: flex; align-items: center; gap: 0;
+      padding: 8px 20px; border-bottom: 1px solid var(--border);
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .cp-header-spacer { width: 200px; flex-shrink: 0; }
+    .cp-header-labels { display: flex; gap: 2px; }
+    .cp-header-label {
+      width: 38px; text-align: center; flex-shrink: 0;
+      font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    }
+
+    /* ── ROWS ────────────────────────────────────────── */
+    .section-label {
+      padding: 14px 20px 6px;
+      font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted);
+    }
+
+    .lb-row {
+      display: flex; align-items: center;
+      padding: 10px 20px; border-bottom: 1px solid var(--border);
+      transition: background 0.15s; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row.dnf { opacity: 0.45; }
+
+    .lb-rank {
+      width: 28px; flex-shrink: 0;
+      font-size: 13px; color: var(--muted2); text-align: center;
+    }
+    .lb-rank.top { color: var(--accent); }
+
+    .lb-avatar {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      background: var(--mid); border: 1.5px solid var(--border2);
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      margin: 0 10px 0 4px;
+    }
+    .lb-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .lb-avatar .init { font-size: 11px; color: var(--muted2); }
+
+    .lb-name-block { width: 124px; flex-shrink: 0; min-width: 0; }
+    .lb-name { font-size: 14px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-last {
+      font-size: 9px; color: var(--muted2); letter-spacing: 0.05em; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .lb-last .time { color: var(--accent); margin-left: 4px; }
+
+    .lb-checkpoints { display: flex; gap: 2px; flex-shrink: 0; }
+    .lb-cp {
+      width: 38px; height: 28px; border-radius: 3px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; letter-spacing: 0.08em; background: var(--border);
+      color: var(--muted); position: relative;
+    }
+    .lb-cp.done {
+      background: rgba(233,189,74,0.12); color: var(--accent); border: 1px solid rgba(233,189,74,0.3);
+    }
+    .lb-cp.done::after {
+      content: '✓'; font-size: 10px;
+    }
+    .lb-cp:not(.done)::after { content: ''; }
+
+    .lb-empty {
+      padding: 48px 20px; text-align: center;
+      font-size: 13px; color: var(--muted); letter-spacing: 0.05em;
+    }
+
+    .lb-dnf-badge {
+      font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: #9e5a5a; background: rgba(142,46,46,0.12); border: 1px solid #3a2020;
+      padding: 2px 7px; border-radius: 2px; margin-left: 8px; flex-shrink: 0;
+    }
+
+    footer {
+      text-align: center; padding: 24px 20px;
+      font-size: 10px; color: var(--muted); letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-logo"><img src="/icons/musette_mlogo-white.svg" alt="Musette"></div>
+    <div class="header-title">Leaderboard</div>
+  </div>
+  <div class="live-pill" id="live-pill">
+    <div class="live-dot"></div>
+    <span>Live</span>
+  </div>
+</header>
+
+<main>
+  <div class="event-bar">
+    <div class="event-name"><em>Skåne</em> Grus 2026</div>
+    <div class="event-stats" id="event-stats">Laddar…</div>
+  </div>
+
+  <div id="board"></div>
+</main>
+
+<footer>Uppdateras automatiskt var 10:e sekund</footer>
+
+<script>
+let lastData = null;
+let staleTimer = null;
+
+async function load() {
+  try {
+    const data = await fetch('/api/leaderboard').then(r => r.json());
+    lastData = data;
+    render(data);
+    setLive(true);
+    clearTimeout(staleTimer);
+    staleTimer = setTimeout(() => setLive(false), 30000);
+  } catch {
+    setLive(false);
+  }
+}
+
+function setLive(ok) {
+  const pill = document.getElementById('live-pill');
+  pill.classList.toggle('stale', !ok);
+}
+
+function render({ checkpoints, participants }) {
+  const board = document.getElementById('board');
+  const stats = document.getElementById('event-stats');
+
+  const active = participants.filter(p => p.status !== 'dnf');
+  const dnf    = participants.filter(p => p.status === 'dnf');
+
+  stats.innerHTML = `<span>${participants.length}</span> deltagare`;
+
+  if (!participants.length) {
+    board.innerHTML = '<div class="lb-empty">Inga deltagare ännu</div>';
+    return;
+  }
+
+  const sorted = rankParticipants(active, checkpoints);
+  const sortedDNF = rankParticipants(dnf, checkpoints);
+
+  let html = '';
+
+  if (sorted.length) {
+    html += sorted.map((p, i) => rowHTML(p, i + 1, checkpoints)).join('');
+  }
+
+  if (sortedDNF.length) {
+    html += `<div class="section-label">DNF</div>`;
+    html += sortedDNF.map(p => rowHTML(p, null, checkpoints, true)).join('');
+  }
+
+  if (!html) {
+    html = '<div class="lb-empty">Inga incheckningar ännu</div>';
+  }
+
+  board.innerHTML = html;
+}
+
+function rankParticipants(ps, checkpoints) {
+  return [...ps].sort((a, b) => {
+    const aDone = a.checkIns?.length || 0;
+    const bDone = b.checkIns?.length || 0;
+    if (bDone !== aDone) return bDone - aDone;
+    // Same count: whoever reached their last checkpoint first wins
+    const aLast = a.checkIns?.length ? a.checkIns[a.checkIns.length - 1].time : Infinity;
+    const bLast = b.checkIns?.length ? b.checkIns[b.checkIns.length - 1].time : Infinity;
+    return aLast - bLast;
+  });
+}
+
+function rowHTML(p, rank, checkpoints, isDNF = false) {
+  const done = p.checkIns?.length || 0;
+  const total = checkpoints.length;
+
+  const lastCI = p.checkIns?.length ? p.checkIns[p.checkIns.length - 1] : null;
+  const lastCP = lastCI ? checkpoints.find(c => c.id === lastCI.checkpointId) : null;
+
+  const rankCell = rank === null ? '' :
+    `<div class="lb-rank ${rank <= 3 ? 'top' : ''}">${rank}</div>`;
+
+  const avatar = p.photo
+    ? `<img src="${p.photo}" alt="">`
+    : `<span class="init">${initials(p.name)}</span>`;
+
+  const lastText = lastCP
+    ? `${lastCP.name}<span class="time">${formatTime(lastCI.time)}</span>`
+    : 'Ingen incheckning';
+
+  const cpDots = checkpoints.map((cp, i) => {
+    const checked = p.checkIns?.some(c => c.checkpointId === cp.id);
+    return `<div class="lb-cp${checked ? ' done' : ''}" title="${cp.name}"></div>`;
+  }).join('');
+
+  const dnfBadge = isDNF ? '<span class="lb-dnf-badge">DNF</span>' : '';
+
+  return `
+    <div class="lb-row${isDNF ? ' dnf' : ''}">
+      ${rankCell || '<div style="width:28px;flex-shrink:0"></div>'}
+      <div class="lb-avatar">${avatar}</div>
+      <div class="lb-name-block">
+        <div class="lb-name">${p.name}${dnfBadge}</div>
+        <div class="lb-last">${lastText}</div>
+      </div>
+      <div class="lb-checkpoints">${cpDots}</div>
+    </div>`;
+}
+
+function initials(n) { return n.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(); }
+function formatTime(ts) { return new Date(ts).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }); }
+
+load();
+setInterval(load, 10000);
+</script>
+</body>
+</html>
