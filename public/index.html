@@ -149,6 +149,7 @@
     .my-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .bar-name { font-family: degular-display, sans-serif; font-weight: 700; font-style: normal; font-size: 15px; line-height: 1.1; color: var(--white); }
     .bar-sub { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); margin-top: 2px; }
+    .bar-switch { font-size: 9px; color: var(--muted); text-decoration: underline; cursor: pointer; margin-top: 1px; display: inline-block; }
 
     .btn-dnf {
       background: transparent; color: #9e5a5a; border: 1px solid #3a2020;
@@ -320,6 +321,7 @@
       <div>
         <div class="bar-name" id="bar-name">–</div>
         <div class="bar-sub" id="bar-sub">0 av 0 checkpoints</div>
+        <span class="bar-switch" onclick="switchParticipant()">Byt deltagare</span>
       </div>
     </div>
     <button class="btn-dnf" onclick="showDNF()">Avbryt</button>
@@ -365,12 +367,20 @@ let myCheckIns = [];
 let participants = {};
 let cpMarkers = {};
 
+const STORAGE_KEY = 'musette_participant';
+
+function saveSession() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ myId, myName, myPhoto, myCheckIns, isDNF }));
+}
+
+function clearSession() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 // ── Registration ───────────────────────────────────────────────────────────
 document.getElementById('photo-input').addEventListener('change', async e => {
   const file = e.target.files[0];
   if (!file) return;
-  new FileReader().onload = ev =>
-    (document.getElementById('photo-circle').innerHTML = `<img src="${ev.target.result}" alt="">`);
   const reader = new FileReader();
   reader.onload = ev => (document.getElementById('photo-circle').innerHTML = `<img src="${ev.target.result}" alt="">`);
   reader.readAsDataURL(file);
@@ -388,10 +398,15 @@ async function handleJoin() {
   myId = crypto.randomUUID();
   myName = name;
   myPhoto = photoUrl || null;
+  myCheckIns = [];
+  isDNF = false;
   const btn = document.getElementById('join-btn');
   btn.disabled = true;
   btn.textContent = 'Ansluter…';
+  await startRace();
+}
 
+async function startRace() {
   try {
     const data = await fetch('/api/race').then(r => r.json());
     checkpoints = data.checkpoints || [];
@@ -400,6 +415,7 @@ async function handleJoin() {
     checkpoints = [];
     showMapScreen([]);
   }
+  saveSession();
 }
 
 // ── Map screen ─────────────────────────────────────────────────────────────
@@ -553,6 +569,7 @@ function connectWS() {
       case 'checkin':
         if (msg.participantId === myId) {
           myCheckIns.push({ checkpointId: msg.checkpointId, time: msg.time });
+          saveSession();
           placeCheckpointMarkers();
           renderCheckpoints();
           const cp = checkpoints.find(c => c.id === msg.checkpointId);
@@ -588,6 +605,8 @@ function connectWS() {
       case 'reset':
         Object.values(participants).forEach(p => { if (p.marker) p.marker.remove(); });
         participants = {};
+        clearSession();
+        location.reload();
         break;
     }
   };
@@ -643,6 +662,7 @@ function confirmDNF() {
   closeDNF();
   if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'dnf' }));
   document.querySelector('.btn-dnf').style.display = 'none';
+  saveSession();
   renderCheckpoints();
   showToast('Du är markerad som DNF');
 }
@@ -659,6 +679,32 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
 }
+
+function switchParticipant() {
+  if (!confirm('Byta deltagare? Din nuvarande progress sparas inte.')) return;
+  if (ws) ws.close();
+  clearSession();
+  location.reload();
+}
+
+// ── Auto-restore session ───────────────────────────────────────────────────
+(async () => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
+  try {
+    const s = JSON.parse(saved);
+    if (!s.myId || !s.myName) return;
+    myId = s.myId;
+    myName = s.myName;
+    myPhoto = s.myPhoto || null;
+    myCheckIns = s.myCheckIns || [];
+    isDNF = s.isDNF || false;
+    await startRace();
+    if (isDNF) {
+      document.querySelector('.btn-dnf').style.display = 'none';
+    }
+  } catch { clearSession(); }
+})();
 
 history.pushState(null, '', window.location.href);
 window.addEventListener('popstate', () => history.pushState(null, '', window.location.href));
