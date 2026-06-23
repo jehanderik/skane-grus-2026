@@ -184,6 +184,12 @@
     .p-progress span { color: var(--accent); }
     .p-status-dnf { font-size: 9px; letter-spacing: 0.1em; color: #9e5a5a; text-transform: uppercase; }
     .p-empty { font-size: 11px; color: var(--muted); padding: 8px 0; }
+    .p-del { width: 32px; text-align: right; }
+    .btn-del-p {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 13px; padding: 2px 4px; border-radius: 3px; line-height: 1;
+    }
+    .btn-del-p:hover { color: #c0392b; background: rgba(192,57,43,0.12); }
 
     .btn-reset {
       width: 100%; background: transparent; border: 1px solid #3a2020; color: #9e5a5a;
@@ -299,10 +305,11 @@
               <tr>
                 <th>Namn</th>
                 <th>Progress</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="p-tbody">
-              <tr><td colspan="2" class="p-empty">–</td></tr>
+              <tr><td colspan="3" class="p-empty">–</td></tr>
             </tbody>
           </table>
           <button class="btn-reset" onclick="resetRace()">Återställ lopp</button>
@@ -572,7 +579,7 @@ function renderParticipants(ps) {
     : 'Inga deltagare ännu';
 
   if (!ps.length) {
-    tbody.innerHTML = '<tr><td colspan="2" class="p-empty">–</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" class="p-empty">–</td></tr>';
     return;
   }
 
@@ -593,8 +600,18 @@ function renderParticipants(ps) {
       <tr>
         <td class="p-name">${p.name}</td>
         <td class="p-progress">${statusCell}</td>
+        <td class="p-del"><button class="btn-del-p" onclick="deleteParticipant('${p.id}', '${p.name.replace(/'/g, "\\'")}')">✕</button></td>
       </tr>`;
   }).join('');
+}
+
+async function deleteParticipant(id, name) {
+  if (!confirm(`Ta bort ${name}?`)) return;
+  try {
+    await api(`/api/admin/participants/${id}`, { method: 'DELETE' });
+    showToast(`${name} borttagen`);
+    pollParticipants();
+  } catch { showToast('Serverfel'); }
 }
 
 async function resetRace() {

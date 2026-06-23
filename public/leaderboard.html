@@ -305,10 +305,9 @@ setInterval(load, 10000);
   ws.onmessage = e => {
     const msg = JSON.parse(e.data);
     if (msg.type === 'reset') {
-      // Clear immediately, don't wait for next poll
       render({ checkpoints: [], participants: [] });
       document.getElementById('event-stats').textContent = '';
-    } else if (msg.type === 'checkin' || msg.type === 'joined' || msg.type === 'dnf') {
+    } else if (msg.type === 'checkin' || msg.type === 'joined' || msg.type === 'dnf' || msg.type === 'removed') {
       load();
     }
   };

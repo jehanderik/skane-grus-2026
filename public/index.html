@@ -681,6 +681,18 @@ function connectWS() {
         }
         break;
 
+      case 'removed':
+        if (msg.id === myId) {
+          clearSession();
+          location.reload();
+        } else {
+          const rp = participants[msg.id];
+          if (rp?.marker) rp.marker.remove();
+          delete participants[msg.id];
+          if (document.getElementById('lb-modal').classList.contains('open')) fetchLeaderboard();
+        }
+        break;
+
       case 'reset':
         Object.values(participants).forEach(p => { if (p.marker) p.marker.remove(); });
         participants = {};

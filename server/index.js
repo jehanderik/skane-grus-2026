@@ -85,6 +85,14 @@ app.post('/api/admin/route', adminOnly, gpxUpload.single('gpx'), (req, res) => {
 app.get('/api/admin/participants', adminOnly, (req, res) =>
   res.json([...participants.values()]));
 
+app.delete('/api/admin/participants/:id', adminOnly, (req, res) => {
+  const id = req.params.id;
+  if (!participants.has(id)) return res.status(404).json({ error: 'Deltagare hittades inte' });
+  participants.delete(id);
+  broadcast({ type: 'removed', id });
+  res.json({ ok: true });
+});
+
 app.post('/api/admin/reset', adminOnly, (req, res) => {
   participants.clear();
   broadcast({ type: 'reset' });
